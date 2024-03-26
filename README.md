@@ -32,7 +32,7 @@ For the next stage of development, the following features are planned to be impl
 
 ## Usage
 1. Import pydb into your python file/interpreter.
-2. Follow the information from the wiki for more info on specific usage
+2. Follow the information from the [wiki](https://github.com/HarbingerOfFire/PYDB/wiki) for more info on specific usage
 
 
 ## Dependencies
