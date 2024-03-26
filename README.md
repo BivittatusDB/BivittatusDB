@@ -1,3 +1,7 @@
+<p align="center">
+<img src="./logo.png" />
+</p>
+
 # Operator-Based Relational Database Management System (Stage One)
 
 This is a Python-based relational database management system (RDBMS) designed from scratch with operator-based functionalities. It's a standalone system not compatible with SQL or NoSQL databases, aiming to provide a simple yet functional database management solution.
@@ -32,7 +36,7 @@ For the next stage of development, the following features are planned to be impl
 
 
 ## Dependencies
-The databases are saved in h5 files, and as such requires the h5py module, as seen in the `requirements.txt` file.
+The databases are saved in h5 files, and as such requires the h5py module, as seen in the [`requirements.txt`](./requirements.txt) file.
 ```bash
 pip install -r requirements.txt
 ```
