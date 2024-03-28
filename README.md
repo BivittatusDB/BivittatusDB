@@ -23,6 +23,7 @@ At this stage, the database system supports the following features:
 - Data typing (with integrity checks)
 
 ## Sample From Python interpreter (3.12.2)
+(NOTE: Image made bbivittatusDBefore name change. Import bivittatusDB instead of PYDB)
 ![sample](sample.png)
 
 ## Future Plans (Stage Two)
@@ -31,7 +32,7 @@ For the next stage of development, the following features are planned to be impl
 - **Update Values**: Implement functionality to update values directly instead of deleting and adding back.
 
 ## Usage
-1. Import pydb into your python file/interpreter.
+1. Import bivittatusDB into your python file/interpreter.
 2. Follow the information from the [wiki](https://github.com/HarbingerOfFire/PYDB/wiki) for more info on specific usage
 
 
