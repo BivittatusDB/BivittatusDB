@@ -2,7 +2,7 @@
 <img src="./logo.png" />
 </p>
 
-# Operator-Based Relational Database Management System (Stage One)
+# BivittatusDB: Operator-Based Relational Database Management System (Stage One)
 
 This is a Python-based relational database management system (RDBMS) designed from scratch with operator-based functionalities. It's a standalone system not compatible with SQL or NoSQL databases, aiming to provide a simple yet functional database management solution.
 
