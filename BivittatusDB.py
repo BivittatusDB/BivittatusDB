@@ -1,4 +1,4 @@
-import pydb_tb, h5py, json
+import BDB_tb, h5py, json
 
 class database:
     def __init__(self, database_name:str):

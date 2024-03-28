@@ -1,4 +1,4 @@
-import pydb_io as io, json, datetime, pydb_metadata
+import BDB_io as io, json, datetime, BDB_metadata
 from typing import Union
 
 class table:

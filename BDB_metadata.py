@@ -2,7 +2,7 @@
 #no checks for data types, loading metadata (for obvious reasons), primary keys.
 #In short: metadata table with no metametadata
 
-import pydb_io as io, json, datetime
+import BDB_io as io, json, datetime
 from typing import Union
 
 class table:
