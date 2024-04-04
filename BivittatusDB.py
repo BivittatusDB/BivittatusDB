@@ -6,7 +6,7 @@ class database:
 
     def load_table(self, table_name:str):
         '''load preexisting tables from the database.'''
-        return pydb_tb.table(self.database_name, table_name)
+        return BDB_tb.table(self.database_name, table_name)
     
     def init(self):
         '''initiate a new database. returns self to allow shorter code'''
