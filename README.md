@@ -6,6 +6,8 @@
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.12)-blue)
 ![Static Badge](https://img.shields.io/badge/Status%20-%20Basic%20-%20yellow)
 
+<!-- Place this tag where you want the button to render. -->
+<a class="github-button" href="https://github.com/HarbingerOfFire" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Follow @HarbingerOfFire on GitHub">Follow @HarbingerOfFire</a>
 
 # BivittatusDB: Operator-Based Relational Database Management System (Stage One)
 
