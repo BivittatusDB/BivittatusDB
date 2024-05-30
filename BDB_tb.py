@@ -204,3 +204,12 @@ class table:
         for row in rows:
             table_data.append(self.data[row])
         return table(self.database, f"pydb_{time}", True, table_data)
+    
+    def __lshift__():
+        pass
+
+    def __rshift__():
+        pass
+
+    def __xor__():
+        pass
