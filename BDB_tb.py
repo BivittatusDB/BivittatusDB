@@ -1,5 +1,4 @@
 import BDB_io as io, json, datetime, BDB_metadata
-from typing import Union
 
 class table:
     def __init__(self, database, table_name, temp:bool=False, temp_data:list=None) -> None:
@@ -11,6 +10,13 @@ class table:
         else:
             self.data=temp_data
             self.columns=self.data.pop(0)
+
+    def __conv_list_dict__(self):
+        return [dict(zip(self.columns, row)) for row in self.data]
+    
+    def __conv_dict_list__(self, dicts:dict, other):
+        joined_cols = self.columns + [col for col in other.columns if col not in self.columns]
+        return [joined_cols]+[[row.get(col, None) for col in joined_cols] for row in dicts]
 
     def __read__(self):
         '''Read data from a file'''
@@ -67,13 +73,13 @@ class table:
             return self.columns.index(key)
         return key
 
-    def __getitem__(self, key: Union[int, str]):
+    def __getitem__(self, key: str):
         '''return a column from the data. Requirement to compare data'''
         self.column=[]
         data=self.data
-        key=self.__fix_index__(key)
+        self.key=self.__fix_index__(key)
         for row in data:
-            self.column.append(row[key])
+            self.column.append(row[self.key])
         return self
     
     def __setitem__(self, key, value):
@@ -205,11 +211,28 @@ class table:
             table_data.append(self.data[row])
         return table(self.database, f"pydb_{time}", True, table_data)
     
-    def __lshift__():
+    def __lshift__(self, other):
+        time=datetime.datetime.now()
+        left_table=self.__conv_list_dict__()
+        left_cols =self.columns
+        join_key_left=self.columns[self.key]
+        right_table=other.__conv_list_dict__()
+        right_cols=other.columns
+        join_key_right=other.columns[other.key]
+
+        right_dict= {row[join_key_right]:row for row in right_table}
+        joined_table=[]
+        for left_row in left_table:
+            key= left_row[join_key_left]
+            matched_row=right_dict.get(key, {})
+            combine_row={**left_row, **{col:matched_row.get(col, None) for col in right_cols if col not in left_cols}}
+            joined_table.append(combine_row)
+        joined_table=self.__conv_dict_list__(joined_table, other)
+        return table(self.database, f"pydb_{time}", True, joined_table)
+
+
+    def __rshift__(self):
         pass
 
-    def __rshift__():
-        pass
-
-    def __xor__():
+    def __xor__(self):
         pass
