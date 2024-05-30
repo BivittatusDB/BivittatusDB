@@ -55,7 +55,7 @@ class table:
     
     def __load_metadata__(self):
         '''Load metadata from database. Used to make checks'''
-        return pydb_metadata.table(self.database, self.table_name)
+        return BDB_metadata.table(self.database, self.table_name)
 
     def __len__(self)->int:
         '''return the number of values in the data'''
