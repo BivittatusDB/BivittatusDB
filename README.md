@@ -56,3 +56,12 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 This project is licensed under the [MIT License](LICENSE).
 
 This README.md file provides an overview of the operator-based relational database management system implemented in Python, detailing its current features, future plans, usage instructions, dependencies, and contribution guidelines. Additionally, it outlines the licensing information for the project.
+
+## !!!UPDATE: STAGE 2 IN PROGRESS!!!
+Stage 2 is now in progress. The new features (planned on) becoming available are as follows:
+    JOINS: Left, Right, and Full joins will now be available.
+    AUTOCOMMIT: Toggelable autocommit for databases so that save() is not always necessary.
+    PROPER ERROR HANDLING: BivittatusDB 2 will raise errors when primary key/data type checks fail instead of skipping.
+
+Possible updates:
+    SAVEPOINTS and ROLLBACKS for transactions
