@@ -230,9 +230,25 @@ class table:
         joined_table=self.__conv_dict_list__(joined_table, other)
         return table(self.database, f"pydb_{time}", True, joined_table)
 
+    def __rshift__(self, other):
+        time=datetime.datetime.now()
+        left_table=self.__conv_list_dict__()
+        left_cols =self.columns
+        join_key_left=self.columns[self.key]
+        right_table=other.__conv_list_dict__()
+        right_cols=other.columns
+        join_key_right=other.columns[other.key]
 
-    def __rshift__(self):
-        pass
+        left_dict = {row[join_key_left]:row for row in left_table}
+        joined_table=[]
+        
+        for right_row in right_table:
+            key=right_row[join_key_right]
+            matched_row = left_dict.get(key, {})
+            combined_row = {**{col: matched_row.get(col, None) for col in left_cols if col not in right_cols}, **right_row}
+            joined_table.append(combined_row)
+        joined_table=self.__conv_dict_list__(joined_table, other)
+        return table(self.database, f"pydb_{time}", True, joined_table)
 
     def __xor__(self):
         pass
