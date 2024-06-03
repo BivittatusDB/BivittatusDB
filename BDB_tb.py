@@ -2,6 +2,7 @@ import BDB_io as io, json, datetime, BDB_metadata
 
 class table:
     def __init__(self, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+        self.autocommit=False
         self.database=database
         self.table_name=table_name
         self.temp=temp
@@ -111,9 +112,10 @@ class table:
         del self.column
         return False
     
-    def __matmul__(self, key:int):
-        '''sort a the data by specified column (key). call using self@key'''
+    def __mul__(self, key:int):
+        '''sort a the data by specified column (key). call using self*key (0 indexed)'''
         self.data=sorted(self.data, key=lambda x: x[key])
+        return self
 
     def __check_type__(self, new_data: tuple)->bool:
         '''Check new rows against specified datatypes'''
@@ -254,3 +256,6 @@ class table:
         full_join = {tuple(row.items()): row for row in ljoin+rjoin}.values()
         full_join = self.__conv_dict_list__(full_join, other)
         return table(self.database, f"pydb_{time}", True, full_join)
+    
+    def __matmul__(self, bool):
+        self.autocommit=bool
