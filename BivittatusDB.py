@@ -1,4 +1,5 @@
 import BDB_tb, h5py, json
+from bdb_aggregate import *
 
 class database:
     def __init__(self, database_name:str):
@@ -28,15 +29,3 @@ class database:
             editfile.create_dataset(f"meta_{name}", data=json.dumps(metadata))
         return self.load_table(name)
 
-#extra functions 
-def save(table):
-    '''save the specified table. Must be called to commit changes.'''
-    getattr(table, "__save__")()
-    
-def metadata(table):
-    '''returns the metadata of specified table as a table. Metadata table does not have metadata.'''
-    return getattr(table, "__load_metadata__")()
-
-#True and False commands for auto commit
-ON=True
-OFF=False
