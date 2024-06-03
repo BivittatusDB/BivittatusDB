@@ -119,20 +119,17 @@ class table:
         '''Check new rows against specified datatypes'''
         data_types=self.__load_metadata__()[1].column
         if (len(data_types)-1) != (len(new_data)):
-            print(f"Skipping {new_data} because data doesn't match table structure")
-            return False
+            raise SyntaxError(f"new data doesn't match table structure")
         for i in range(len(new_data)):
             if type(data_types[i]) != type(new_data[i]):
-                print(f"Skipping {new_data} because data doesn't match table structure")
-                return False
+                raise SyntaxError(f"New data doesn't match table structure")
         return True
 
     def __check_primary__(self, new_data: tuple)->bool:
         '''ensure primary key integrity'''
         key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-1))
         if new_data[key] in self[key]:
-            print(f"Skipping {new_data} because primary key {new_data[key]} is already in primary key")
-            return False
+            raise ValueError(f"primary key {new_data[key]} is already in primary key")
         return True  
 
     def __add__(self, value:list):

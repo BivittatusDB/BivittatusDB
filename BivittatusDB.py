@@ -18,8 +18,7 @@ class database:
         '''Make a new table and specify hte name, columns and data types. Optionally assign primary key. Returns the table'''
         if primary not in columns:
             while primary != None:
-                print(f"Can't make unknown column {primary} into a primary key")
-                return None
+                raise NameError(f"Can't make unknown column {primary} into a primary key")
         with h5py.File(self.database_name+".pydb", "a") as editfile:
             editfile.create_dataset(f"/{name}", data=json.dumps([columns]))
             metadata=[("Data", "Type")]
