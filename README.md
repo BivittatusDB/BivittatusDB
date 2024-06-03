@@ -62,6 +62,8 @@ Stage 2 is now in progress. The new features (planned on) becoming available are
     <br>-JOINS: Left, Right, and Full joins will now be available. (Completed [cbd70ab](https://github.com/HarbingerOfFire/bivittatusDB/commit/cbd70ab0d4fb1e2e976cc7155095455a716aa0bd))
     <br>-AUTOCOMMIT: Toggelable autocommit for databases so that save() is not always necessary.
     <br>-PROPER ERROR HANDLING: BivittatusDB 2 will raise errors when primary key/data type checks fail instead of skipping. (Completed [f6becc7](https://github.com/HarbingerOfFire/bivittatusDB/commit/f6becc7a537f872c95d64d06465477579adbfa67))
+    <br>-Basic DATABASE Viewer: not sure if this will stick, but it's there. (Completed [cb455d3](https://github.com/HarbingerOfFire/bivittatusDB/commit/cb455d3f1bb4e86351b0bebb226d0cc52fa6d8fa))
 
 Possible updates:
-    SAVEPOINTS and ROLLBACKS for transactions
+    <br>SAVEPOINTS and ROLLBACKS for transactions
+    <br>COmpression of table data
