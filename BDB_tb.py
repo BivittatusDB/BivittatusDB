@@ -250,5 +250,10 @@ class table:
         joined_table=self.__conv_dict_list__(joined_table, other)
         return table(self.database, f"pydb_{time}", True, joined_table)
 
-    def __xor__(self):
-        pass
+    def __xor__(self, other):
+        time=datetime.datetime.now()
+        ljoin = (self << other).__conv_list_dict__()
+        rjoin = (self >> other).__conv_list_dict__()
+        full_join = {tuple(row.items()): row for row in ljoin+rjoin}.values()
+        full_join = self.__conv_dict_list__(full_join, other)
+        return table(self.database, f"pydb_{time}", True, full_join)
