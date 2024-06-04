@@ -47,7 +47,7 @@ class table:
         with h5py.File(self.database+".pydb", "a") as editfile:
             editfile.create_dataset(f"/{self.table_name}", data=json.dumps([self.columns]))
             metadata=[("Data", "Type")]
-            for column, value in zip(self.columns, self.types)
+            for column, value in zip(self.columns, self.types):
                 metadata.append((column, value))
             editfile.create_dataset(f"meta_{self.table_name}", data=json.dumps(metadata))
         return table(self.database, self.table_name)
