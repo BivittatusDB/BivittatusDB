@@ -130,8 +130,8 @@ class table:
         if (len(data_types)-1) != (len(new_data)):
             raise SyntaxError(f"new data doesn't match table structure")
         for i in range(len(new_data)):
-            if type(data_types[i]) != type(new_data[i]):
-                raise SyntaxError(f"New data doesn't match table structure")
+            if type(data_types[i]) != type(new_data[i]) or type(new_data[i]) != type(None):
+                raise SyntaxError(f"New data does not match defined datatypes.")
         return True
 
     def __check_primary__(self, new_data: tuple)->bool:
