@@ -1,4 +1,5 @@
 import BDB_io as io, json, datetime, BDB_metadata
+import h5py
 
 class table:
     def __init__(self, database, table_name, temp:bool=False, temp_data:list=None) -> None:
@@ -42,10 +43,27 @@ class table:
         new_data=json.dumps([self.columns]+self.data)
         editor.edit_table(self.table_name, new_data)
 
-    def __save__(self):
+    def __make__(self):
+        with h5py.File(self.database+".pydb", "a") as editfile:
+            editfile.create_dataset(f"/{self.table_name}", data=json.dumps([self.columns]))
+            metadata=[("Data", "Type")]
+            for column, value in zip(self.columns, self.types)
+                metadata.append((column, value))
+            editfile.create_dataset(f"meta_{self.table_name}", data=json.dumps(metadata))
+        return table(self.database, self.table_name)
+
+    def __save__(self, name=None, types=None):
+        '''Rename a database or save a temp database with a usable name.'''
+        if name and types:
+            self.temp=False
+            self.table_name=name
+            self.types=types
+            return self.__make__()
+        
         '''Commit changes to database. Call using save function in main file'''
-        self.temp=False
-        self.__edit__()
+        if name==None or name==self.table_name:
+            self.temp=False
+            self.__edit__()
 
     def __repr__(self) -> list:
         '''return raw data. Call with repr(self)'''
@@ -67,7 +85,8 @@ class table:
     
     def __load_metadata__(self):
         '''Load metadata from database. Used to make checks'''
-        return BDB_metadata.table(self.database, self.table_name)
+        self.meta=BDB_metadata.table(self.database, self.table_name)
+        return self.meta
 
     def __len__(self)->int:
         '''return the number of values in the data'''
