@@ -60,9 +60,10 @@ This README.md file provides an overview of the operator-based relational databa
 ## !!!UPDATE: STAGE 2 IN PROGRESS!!!
 Stage 2 is now in progress. The new features (planned on) becoming available are as follows:
     <br>-JOINS: Left, Right, and Full joins will now be available. (Completed [cbd70ab](https://github.com/HarbingerOfFire/bivittatusDB/commit/cbd70ab0d4fb1e2e976cc7155095455a716aa0bd))
-    <br>-AUTOCOMMIT: Toggelable autocommit for databases so that save() is not always necessary.
+    <br>-AUTOCOMMIT: Toggelable autocommit for databases so that save() is not always necessary. (Completed [be42025](https://github.com/HarbingerOfFire/bivittatusDB/commit/be42025e046ca669b4594e1dfb8beb2bde0f0b09))
     <br>-PROPER ERROR HANDLING: BivittatusDB 2 will raise errors when primary key/data type checks fail instead of skipping. (Completed [f6becc7](https://github.com/HarbingerOfFire/bivittatusDB/commit/f6becc7a537f872c95d64d06465477579adbfa67))
     <br>-Basic DATABASE Viewer: not sure if this will stick, but it's there. (Completed [cb455d3](https://github.com/HarbingerOfFire/bivittatusDB/commit/cb455d3f1bb4e86351b0bebb226d0cc52fa6d8fa))
+    Some additional updates will be made and then Stage 2 will be officially published soon as the latest release and the wiki will be updated accordingly. 
 
 Possible updates:
     <br>SAVEPOINTS and ROLLBACKS for transactions
