@@ -14,13 +14,16 @@ class table:
             self.columns=self.data.pop(0)
 
     def __try_commit__(self):
+        '''is autocommit turned on, it will save the table when a change is made.'''
         if self.autocommit:
             self.__save__()
 
     def __conv_list_dict__(self):
+        '''convert data to a dictionary for joins'''
         return [dict(zip(self.columns, row)) for row in self.data]
     
     def __conv_dict_list__(self, dicts:dict, other):
+        '''convert data back to a list after joins'''
         joined_cols = self.columns + [col for col in other.columns if col not in self.columns]
         return [joined_cols]+[[row.get(col, None) for col in joined_cols] for row in dicts]
 
@@ -44,6 +47,7 @@ class table:
         editor.edit_table(self.table_name, new_data)
 
     def __make__(self):
+        '''make a new table, similar to that used in database class, except no primary keys and accepts existing data'''
         with h5py.File(self.database+".pydb", "a") as editfile:
             editfile.create_dataset(f"/{self.table_name}", data=json.dumps([self.columns]))
             metadata=[("Data", "Type")]
@@ -242,6 +246,7 @@ class table:
         return table(self.database, f"pydb_{time}", True, table_data)
     
     def __lshift__(self, other):
+        '''left join tables. call using table1<<table2'''
         time=datetime.datetime.now()
         left_table=self.__conv_list_dict__()
         left_cols =self.columns
@@ -261,6 +266,7 @@ class table:
         return table(self.database, f"pydb_{time}", True, joined_table)
 
     def __rshift__(self, other):
+        '''right join tables. Call using table1>>table2'''
         time=datetime.datetime.now()
         left_table=self.__conv_list_dict__()
         left_cols =self.columns
@@ -281,6 +287,7 @@ class table:
         return table(self.database, f"pydb_{time}", True, joined_table)
 
     def __xor__(self, other):
+        '''full join tables. Call using table1^table2'''
         time=datetime.datetime.now()
         ljoin = (self << other).__conv_list_dict__()
         rjoin = (self >> other).__conv_list_dict__()
@@ -289,4 +296,5 @@ class table:
         return table(self.database, f"pydb_{time}", True, full_join)
     
     def __matmul__(self, bool):
+        '''set autocommit. call using table@bdb.ON or table@bdb.OFF'''
         self.autocommit=bool
