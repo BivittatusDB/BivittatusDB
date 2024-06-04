@@ -12,6 +12,10 @@ class table:
             self.data=temp_data
             self.columns=self.data.pop(0)
 
+    def __try_commit__(self):
+        if self.autocommit:
+            self.__save__()
+
     def __conv_list_dict__(self):
         return [dict(zip(self.columns, row)) for row in self.data]
     
@@ -24,6 +28,7 @@ class table:
         reader=io.read(self.database)
         self.data=json.loads(reader.read_table(self.table_name))
         self.columns=self.data.pop(0)
+        return self.data
 
     def __write__(self, new_table):
         '''Write a new table to database. Not used currently'''
@@ -86,6 +91,7 @@ class table:
     def __setitem__(self, key, value):
         '''change column name. Will probably change later.'''
         self.columns[key]=value
+        self.__try_commit__()
 
     def __iter__(self):
         '''start iterations. Call using `for item in self`'''
@@ -115,6 +121,7 @@ class table:
     def __mul__(self, key:int):
         '''sort a the data by specified column (key). call using self*key (0 indexed)'''
         self.data=sorted(self.data, key=lambda x: x[key])
+        self.__try_commit__()
         return self
 
     def __check_type__(self, new_data: tuple)->bool:
@@ -138,6 +145,7 @@ class table:
         '''add new row to the table. call using self+value'''
         if self.__check_type__(value) and self.__check_primary__(value):
             self.data.append(value)
+        self.__try_commit__()
 
     def __find_compare__(self, operator:str, value):
         '''used to remove all data not meeting opperator requirments.'''
@@ -155,6 +163,7 @@ class table:
         rows=self.__find_compare__("==", value)
         for i in rows:
             self.data.pop(i-rows.index(i))
+        self.__try_commit__()
         
     def __eq__(self, value):
         '''return table of all value meeting operand =='''
