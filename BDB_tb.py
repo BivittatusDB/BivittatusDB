@@ -58,7 +58,10 @@ class table:
             self.temp=False
             self.table_name=name
             self.types=types
-            return self.__make__()
+            new=self.__make__()
+            new.data=self.data
+            new.__save__()
+            return new
         
         '''Commit changes to database. Call using save function in main file'''
         if name==None or name==self.table_name:
@@ -149,7 +152,7 @@ class table:
         if (len(data_types)-1) != (len(new_data)):
             raise SyntaxError(f"new data doesn't match table structure")
         for i in range(len(new_data)):
-            if type(data_types[i]) != type(new_data[i]) or type(new_data[i]) != type(None):
+            if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
                 raise SyntaxError(f"New data does not match defined datatypes.")
         return True
 
