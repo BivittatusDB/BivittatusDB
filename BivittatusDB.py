@@ -1,5 +1,6 @@
-import BDB_tb, h5py, json
+import h5py, json
 from bdb_aggregate import *
+from BDB_tb import *
 
 class database:
     def __init__(self, database_name:str):
@@ -7,7 +8,7 @@ class database:
 
     def load_table(self, table_name:str):
         '''load preexisting tables from the database.'''
-        return BDB_tb.table(self.database_name, table_name)
+        return table(self.database_name, table_name)
     
     def init(self):
         '''initiate a new database. returns self to allow shorter code'''

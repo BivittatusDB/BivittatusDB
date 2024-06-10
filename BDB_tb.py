@@ -1,7 +1,8 @@
 import BDB_io as io, json, datetime, BDB_metadata
 import h5py
+from metaclass import *
 
-class table:
+class table(metaclass=TableMeta):
     def __init__(self, database, table_name, temp:bool=False, temp_data:list=None) -> None:
         self.autocommit=False
         self.database=database
@@ -37,7 +38,7 @@ class table:
     def __write__(self, new_table):
         '''Write a new table to database. Not used currently'''
         writer=io.write(self.database)
-        data=json.dumps([self.columns]+[self.data])
+        data=json.dumps([self.columns]+self.data)
         writer.write_table(new_table, data)
     
     def __edit__(self):
@@ -316,3 +317,30 @@ class table:
     def __matmul__(self, bool):
         '''set autocommit. call using table@bdb.ON or table@bdb.OFF'''
         self.autocommit=bool
+
+    def __rmatmul__(self, other):
+        if type(other)==type(SAVEPOINT):
+            SAVEPOINT.__matmul__(other, self)
+        elif type(other)==type(ROLLBACK):
+            ROLLBACK.__matmul__(other, self)
+        elif type(other)==type(COMMIT):
+            COMMIT.__matmul__(other, self)
+
+class SAVEPOINT(metaclass=SavepointMeta):
+    def __matmul__(self, other:table):
+        data=[other.columns] + other.data
+        rollback=table(other.database, "rollback"+other.table_name, True, data)
+        print("saving...")
+        other.rollback = rollback
+
+class ROLLBACK(metaclass=RollbackMeta):
+    def __matmul__(self, other:table):
+        if not other.rollback:
+            raise AttributeError("Cannot rollback a table with no savepoint")
+        data=other.rollback.data
+        del other.rollback.data
+        other.data=data
+
+class COMMIT(metaclass=CommitMeta):
+    def __matmul__(self, other:table):
+        other.__save__()
