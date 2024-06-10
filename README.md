@@ -56,3 +56,12 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 This project is licensed under the [MIT License](LICENSE).
 
 This README.md file provides an overview of the operator-based relational database management system implemented in Python, detailing its current features, future plans, usage instructions, dependencies, and contribution guidelines. Additionally, it outlines the licensing information for the project.
+
+# !!!UPDATE!!! STAGE 3 IN PROGRESS
+Stage 3 is now in development, with the following changes scheduled to be made:
+1. Transactional Management: add UPDATE and ROLLBACK features for transactional Management
+2. Foreign keys: Add foreign keys with proper refrencing and on update options (STARTED: [9ba4ac8](https://github.com/HarbingerOfFire/bivittatusDB/commit/9ba4ac8521493d290c6ee94c713dde8de9609bd9))
+3. DATA Compression: data will be compressed before storing, to (hopefully) midigate the size of large databases.
+4. Change of Set-Item to change values instead of change column names
+5. Manual scan: if the raw data is updated, you can run a scan to check integrity
+6. Finalizing of aggregate functions
