@@ -6,6 +6,7 @@
 #personal testing files
 misc*.py
 test*.py
+todo.txt
 .gitignore
 *.pydb
 
