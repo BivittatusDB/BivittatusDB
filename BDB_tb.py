@@ -153,7 +153,7 @@ class table:
     def __check_type__(self, new_data: tuple)->bool:
         '''Check new rows against specified datatypes'''
         data_types=self.__load_metadata__()[1].column
-        if (len(data_types)-1) != (len(new_data)):
+        if (len(data_types)-2) != (len(new_data)):
             raise SyntaxError(f"new data doesn't match table structure")
         for i in range(len(new_data)):
             if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
@@ -162,14 +162,32 @@ class table:
 
     def __check_primary__(self, new_data: tuple)->bool:
         '''ensure primary key integrity'''
-        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-1))
+        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-2))
         if new_data[key] in self[key]:
             raise ValueError(f"primary key {new_data[key]} is already in primary key")
-        return True  
+        return True
+    
+    def __load_foreign__(self, other):
+        other=table(self.database, other)
+        return other
+
+    def __check_foreign__(self, new_data:tuple)->bool:
+        '''Ensure new data fits the foreign key constraints'''
+        meta=self.__load_metadata__()
+        if meta[1].column.pop(-1) == "None":
+            return True
+        key=self.__fix_index__(meta[1].column.pop(-2))
+        other_name=self.__load_metadata__()[1].column.pop(-1)
+        other=self.__load_foreign__(other_name)
+        other_key = other.__fix_index__(other.__load_metadata__()[1].column.pop(-2))
+        if new_data[key] in other[other_key]:
+            return True
+        else:
+            raise ReferenceError(f"Value {new_data[key]} not found in {other_name}")
 
     def __add__(self, value:list):
         '''add new row to the table. call using self+value'''
-        if self.__check_type__(value) and self.__check_primary__(value):
+        if self.__check_type__(value) and self.__check_primary__(value) and self.__check_foreign__(value):
             self.data.append(value)
         self.__try_commit__()
 
