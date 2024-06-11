@@ -1,5 +1,7 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", 
+            "h5py", 
+            "numpy",]
 build-backend = "setuptools.build_meta"
 
 [project]
