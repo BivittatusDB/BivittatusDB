@@ -46,7 +46,7 @@ For the next stage of development, the following features are planned to be impl
 ## Dependencies
 The databases are saved in h5 files, and as such requires the h5py module, as seen in the [`requirements.txt`](./requirements.txt) file.
 ```bash
-pip install -r requirements.txt
+pip install -r .github/requirements.txt
 ```
 
 ## Contributing
