@@ -1,9 +1,13 @@
 [build-system]
-requires = ["setuptools", 
-            "h5py", 
-            "numpy",]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "BivitattusDB"
 version = "2.1.0"
+dependencies = [
+    "h5py", "numpy",
+]
+
+[tool.setuptools]
+packages = { find = { include = ["BDB_*", "metaclass*", "bdb_aggregate*"] } }
