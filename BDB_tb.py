@@ -115,6 +115,7 @@ class table(metaclass=TableMeta):
             self.column.append(row[self.key])
         return self
     
+    #TODO: change
     def __setitem__(self, key, value):
         '''change column name. Will probably change later.'''
         self.columns[key]=value
@@ -330,7 +331,6 @@ class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):
         data=[other.columns] + other.data
         rollback=table(other.database, "rollback"+other.table_name, True, data)
-        print("saving...")
         other.rollback = rollback
 
 class ROLLBACK(metaclass=RollbackMeta):

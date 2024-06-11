@@ -1,5 +1,6 @@
-import h5py, json
+import h5py, json, gzip
 from bdb_aggregate import *
+from binascii import hexlify, unhexlify
 from BDB_tb import *
 
 class database:
@@ -22,12 +23,12 @@ class database:
             while primary != None:
                 raise NameError(f"Can't make unknown column {primary} into a primary key")
         with h5py.File(self.database_name+".pydb", "a") as editfile:
-            editfile.create_dataset(f"/{name}", data=json.dumps([columns]))
+            editfile.create_dataset(f"/{name}", data=hexlify(gzip.compress(json.dumps([columns]).encode())))
             metadata=[("Data", "Type")]
             for column, value in zip(columns, data_types):
                 metadata.append((column, value))
             metadata.append(("Primary Key", f"{primary}"))
             metadata.append(("Foreign Key", f"{foreign}"))
-            editfile.create_dataset(f"meta_{name}", data=json.dumps(metadata))
+            editfile.create_dataset(f"meta_{name}", data=hexlify(gzip.compress(json.dumps(metadata).encode())))
         return self.load_table(name)
 
