@@ -17,6 +17,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+
 [project.urls]
 Homepage = "https://github.com/HarbingerOfFire/bivittatusDB"
 Issues = "https://github.com/HarbingerOfFire/bivittatusDB/issues"
