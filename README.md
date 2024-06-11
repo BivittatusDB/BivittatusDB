@@ -44,16 +44,16 @@ For the next stage of development, the following features are planned to be impl
 2. Follow the information from the [wiki](https://github.com/HarbingerOfFire/PYDB/wiki) for more info on specific usage
 
 ## Dependencies
-The databases are saved in h5 files, and as such requires the h5py module, as seen in the [`requirements.txt`](./requirements.txt) file.
+The databases are saved in h5 files, and as such requires the h5py module, as seen in the [`requirements.txt`](.github/requirements.txt) file.
 ```bash
 pip install -r .github/requirements.txt
 ```
 
 ## Contributing
-Contributions are welcome! If you'd like to contribute to the project, please fork the repository and submit a pull request with your changes.
+Contributions are welcome! If you'd like to contribute to the project, please fork the repository and submit a pull request with your changes.See [Contributing](.github/CONTRIBUTING.md) & [Code of Cunduct](.github/CODE_OF_CONDUCT.md)
 
 ## License
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](.github/LICENSE).
 
 This README.md file provides an overview of the operator-based relational database management system implemented in Python, detailing its current features, future plans, usage instructions, dependencies, and contribution guidelines. Additionally, it outlines the licensing information for the project.
 
