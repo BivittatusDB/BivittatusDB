@@ -115,10 +115,19 @@ class table(metaclass=TableMeta):
             self.column.append(row[self.key])
         return self
     
-    #TODO: change
     def __setitem__(self, key, value):
         '''change column name. Will probably change later.'''
-        self.columns[key]=value
+        key=self.__fix_index__(key)
+        try:
+            value[1] == None
+            data_to_change=self.data
+        except AttributeError:
+            data_to_change=value[1].data
+        for row in self.data:
+            if row in data_to_change:
+                new_row=list(row)
+                new_row[key] = value[0]
+                self.data[self.data.index(row)] = tuple(new_row)
         self.__try_commit__()
 
     def __iter__(self):

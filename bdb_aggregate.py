@@ -11,6 +11,7 @@ def metadata(table):
 #True and False commands for auto commit
 ON=True
 OFF=False
+ALL=None
 
 #aggregate functions for stage 3
 def COUNT(): pass
