@@ -174,7 +174,7 @@ class table(metaclass=TableMeta):
     def __check_primary__(self, new_data: tuple)->bool:
         '''ensure primary key integrity'''
         key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-2))
-        if new_data[key] in self[key]:
+        if new_data[key] in self[key].column:
             raise ValueError(f"primary key {new_data[key]} is already in primary key")
         return True
     
@@ -335,6 +335,24 @@ class table(metaclass=TableMeta):
             ROLLBACK.__matmul__(other, self)
         elif type(other)==type(COMMIT):
             COMMIT.__matmul__(other, self)
+
+    def __scan__(self):
+        for row in self.data:
+            if self.__check_foreign__(row) and self.__check_type__(row) and self.__scan_primary__():
+                continue
+
+    def contains_duplicates(self, lst):
+        for i in range(len(lst)):
+            for j in range(i + 1, len(lst)):
+                if lst[i] == lst[j]:
+                    return True
+        return False
+
+    def __scan_primary__(self):
+        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-2))
+        if self.contains_duplicates(self[key].column):
+            raise ValueError(f"primary key is duplicated in {self.table_name}: {self.column}")
+        return True
 
 class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):

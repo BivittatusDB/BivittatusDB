@@ -8,6 +8,11 @@ def metadata(table):
     '''returns the metadata of specified table as a table. Metadata table does not have metadata.'''
     return getattr(table, "__load_metadata__")()
 
+def scan(table):
+    '''scans a table for errors if updated manually'''
+    getattr(table, "__scan__")()
+    return True
+
 #True and False commands for auto commit
 ON=True
 OFF=False
