@@ -63,5 +63,5 @@ Stage 3 is now in development, with the following changes scheduled to be made:
 2. Foreign keys: Add foreign keys with proper refrencing and on update options (STARTED: [9ba4ac8](https://github.com/HarbingerOfFire/bivittatusDB/commit/9ba4ac8521493d290c6ee94c713dde8de9609bd9))
 3. DATA Compression: data will be compressed before storing, to (hopefully) midigate the size of large databases. (Done: [4271d01](https://github.com/HarbingerOfFire/bivittatusDB/commit/4271d0175fc96e65dbda00bcbaffffbe131b14b1))
 4. Change of Set-Item to change values instead of change column names (Done: [eeea1e0](https://github.com/HarbingerOfFire/bivittatusDB/commit/eeea1e05d84f5b940e08ce80b00457cffdf368b6))
-5. Manual scan: if the raw data is updated, you can run a scan to check integrity
+5. Manual scan: if the raw data is updated, you can run a scan to check integrity (Done [7b06bbd](https://github.com/HarbingerOfFire/bivittatusDB/commit/7b06bbd05c586e47734c9371ba5a166d12429abd))
 6. Finalizing of aggregate functions
