@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="BivitattusDB",
@@ -9,7 +9,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url="https://github.com/HarbingerOfFire/bivittatusDB",
-    packages=find_packages(where='src'),
+    py_modules=["bdb_aggregate", "BDB_io", "BDB_metadata", "BDB_tb", "BivitattusView", "BivittatusDB", "metaclass"],
     package_dir={'': 'src'},
     python_requires='>=3.8',
     classifiers=[
