@@ -3,7 +3,7 @@
 </p>
 
 ![Static Badge](https://img.shields.io/badge/Version-2.0.0-%20green)
-![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.12)-blue)
+![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
 ![Static Badge](https://img.shields.io/badge/Status%20-%20Intermediate%20-%20blue)
 
 
@@ -60,7 +60,7 @@ This README.md file provides an overview of the operator-based relational databa
 # !!!UPDATE!!! STAGE 3 IN PROGRESS
 Stage 3 is now in development, with the following changes scheduled to be made:
 1. Transactional Management: add COMMIT and ROLLBACK features for transactional Management (Done: [22cb24f](https://github.com/HarbingerOfFire/bivittatusDB/commit/22cb24fd69e657ac9ca1c9818c69f5d37cb0adb8))
-2. Foreign keys: Add foreign keys with proper refrencing and on update options (STARTED: [9ba4ac8](https://github.com/HarbingerOfFire/bivittatusDB/commit/9ba4ac8521493d290c6ee94c713dde8de9609bd9))
+2. Foreign keys: Add foreign keys with proper refrencing and on update options (DONE: [9ba4ac8](https://github.com/HarbingerOfFire/bivittatusDB/commit/9ba4ac8521493d290c6ee94c713dde8de9609bd9))
 3. DATA Compression: data will be compressed before storing, to (hopefully) midigate the size of large databases. (Done: [4271d01](https://github.com/HarbingerOfFire/bivittatusDB/commit/4271d0175fc96e65dbda00bcbaffffbe131b14b1))
 4. Change of Set-Item to change values instead of change column names (Done: [eeea1e0](https://github.com/HarbingerOfFire/bivittatusDB/commit/eeea1e05d84f5b940e08ce80b00457cffdf368b6))
 5. Manual scan: if the raw data is updated, you can run a scan to check integrity (Done [7b06bbd](https://github.com/HarbingerOfFire/bivittatusDB/commit/7b06bbd05c586e47734c9371ba5a166d12429abd))
