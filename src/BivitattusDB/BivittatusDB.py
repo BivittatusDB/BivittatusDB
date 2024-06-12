@@ -14,7 +14,7 @@ class database:
     def init(self):
         '''initiate a new database. returns self to allow shorter code'''
         with h5py.File(self.database_name+".pydb", "w") as outfile:
-            outfile.create_dataset("/database", data=self.database_name.encode())
+            outfile.create_dataset("/database", data=hexlify(gzip.compress(json.dumps(self.database_name).encode())))
         return self
 
     def make_table(self, name:str, columns:tuple, data_types:tuple, primary:str=None, foreign:str=None):
