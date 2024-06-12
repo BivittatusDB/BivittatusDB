@@ -16,5 +16,6 @@ requires-python = ">=3.8"
 Homepage = "https://github.com/HarbingerOfFire/bivittatusDB"
 Issues = "https://github.com/HarbingerOfFire/bivittatusDB/issues"
 
-[tool.setuptools]
-packages = ["bdb_aggregate", "BDB_io", "BDB_metadata", "BDB_tb", "BivitattusView", "BivittatusDB", "metaclass"]
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["BivitattusDB"]
