@@ -14,7 +14,7 @@ This is a Python-based relational database management system (RDBMS) designed fr
 - **Relational Structure**: Organizes data in tables with rows and columns, following a relational database model.
 - **Basic CRUD Operations**: Supports basic Create, Read, Update, and Delete operations.
 - **Indexing**: Efficient data retrieval with indexing mechanisms.
-- **Transaction Management**: Implements transaction management to ensure data consistency. (Coming in Stage 3)
+- **Transaction Management**: Implements transaction management to ensure data consistency.
 - **Security**: All databases are triple layer encrypted with a user defined password for each database.
 
 ## Examples
