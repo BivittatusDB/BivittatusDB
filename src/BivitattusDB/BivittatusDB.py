@@ -1,11 +1,17 @@
-import h5py, json, gzip
+import h5py, json, gzip, getpass
 from bdb_aggregate import *
 from binascii import hexlify, unhexlify
 from BDB_tb import *
+from encrypt import File_Enc
 
 class database:
     def __init__(self, database_name:str):
+        self.key=getpass.getpass(f"Password for {database_name}: ").encode()
         self.database_name=database_name
+
+    def __del__(self):
+        print("encrypting...")
+        File_Enc().enc(self.database_name+".pydb", self.key)
 
     def load_table(self, table_name:str):
         '''load preexisting tables from the database.'''
@@ -15,6 +21,11 @@ class database:
         '''initiate a new database. returns self to allow shorter code'''
         with h5py.File(self.database_name+".pydb", "w") as outfile:
             outfile.create_dataset("/database", data=hexlify(gzip.compress(json.dumps(self.database_name).encode())))
+        return self
+    
+    def use(self):
+        print("decrypting...")
+        File_Enc().dec(self.database_name+".pydb", self.key)
         return self
 
     def make_table(self, name:str, columns:tuple, data_types:tuple, primary:str=None, foreign:str=None):
