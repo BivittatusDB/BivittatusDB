@@ -11,12 +11,12 @@ class Aes_enc:
     def encrypt(self,message, key, block_size=32):
         message = self.pad(message, block_size)
         iv = Random.new().read(block_size)
-        cipher = AES.new(key, AES.MODE_ECB)
+        cipher = AES.new(key, AES.MODE_CBC)
         return iv + cipher.encrypt(message)
 
     def decrypt(self,ciphertext, key, block_size=32):
         iv = ciphertext[:block_size]
-        cipher = AES.new(key, AES.MODE_ECB)
+        cipher = AES.new(key, AES.MODE_CBC)
         plaintext = cipher.decrypt(ciphertext[block_size:])
         return plaintext.rstrip(b"\0")
 
@@ -46,12 +46,12 @@ class Bfs_enc():
     def encrypt(self,message, key, block_size=32):
         message = self.pad(message, block_size)
         iv = Random.new().read(block_size)
-        cipher = Blowfish.new(key, Blowfish.MODE_ECB)
+        cipher = Blowfish.new(key, Blowfish.MODE_CBC)
         return iv + cipher.encrypt(message)
 
     def decrypt(self,ciphertext, key, block_size=32):
         iv = ciphertext[:block_size]
-        cipher = Blowfish.new(key, Blowfish.MODE_ECB)
+        cipher = Blowfish.new(key, Blowfish.MODE_CBC)
         plaintext = cipher.decrypt(ciphertext[block_size:])
         return plaintext.rstrip(b"\0")
 
