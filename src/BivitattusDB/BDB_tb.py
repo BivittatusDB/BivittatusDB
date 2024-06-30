@@ -8,7 +8,7 @@ class table(metaclass=TableMeta):
         self.database=database
         self.table_name=table_name
         self.temp=temp
-        self.data = None  # Make sure that 'data' is defined in the constructor.
+        self.data = None  
         if self.temp==False:
             self.__read__()
         else:
@@ -32,7 +32,7 @@ class table(metaclass=TableMeta):
     def __read__(self):
         '''Read data from a file'''
         try:
-            reader = io.read(self.database)
+            reader = io.HDF5Handler(self.database)
         except Exception as e:
             print(f"Error reading the database:  {e}")
             return None
@@ -54,37 +54,49 @@ class table(metaclass=TableMeta):
         return self.data
 
     def __write__(self, new_table):
-        '''Write a new table to database. Not used currently'''
-        writer=io.write(self.database)
-        data=json.dumps([self.columns]+self.data)
-        writer.write_table(new_table, data)
+        try:
+            '''Write a new table to database. Not used currently'''
+            writer=io.write(self.database)
+            data=json.dumps([self.columns]+self.data)
+            writer.write_table(new_table, data)
+        except Exception as e:
+            return f"Error writing: {e}"
     
     def __edit__(self):
-        '''Change data in database table. Used in the __save__ method'''
-        editor=io.edit(self.database)
-        new_data=json.dumps([self.columns]+self.data)
-        editor.edit_table(self.table_name, new_data)
+        try:
+            '''Change data in database table. Used in the __save__ method'''
+            editor=io.HDF5Handler(self.database)
+            new_data=json.dumps([self.columns]+self.data)
+            editor.edit_table(self.table_name, new_data)
+        except Exception as e:
+            return f"Error editing data: {e}"
 
     def __make__(self):
-        '''make a new table, similar to that used in database class, except no primary keys and accepts existing data'''
-        with h5py.File(self.database+".pydb", "a") as editfile:
-            editfile.create_dataset(f"/{self.table_name}", data=json.dumps([self.columns]))
-            metadata=[("Data", "Type")]
-            for column, value in zip(self.columns, self.types):
-                metadata.append((column, value))
-            editfile.create_dataset(f"meta_{self.table_name}", data=json.dumps(metadata))
-        return table(self.database, self.table_name)
+        try:
+            '''make a new table, similar to that used in database class, except no primary keys and accepts existing data'''
+            with h5py.File(self.database+".pydb", "a") as editfile:
+                editfile.create_dataset(f"/{self.table_name}", data=json.dumps([self.columns]))
+                metadata=[("Data", "Type")]
+                for column, value in zip(self.columns, self.types):
+                    metadata.append((column, value))
+                editfile.create_dataset(f"meta_{self.table_name}", data=json.dumps(metadata))
+            return table(self.database, self.table_name)
+        except Exception as e:
+            return f"Error making a new table: {e}"
 
     def __save__(self, name=None, types=None):
-        '''Rename a database or save a temp database with a usable name.'''
-        if name and types:
-            self.temp=False
-            self.table_name=name
-            self.types=types
-            new=self.__make__()
-            new.data=self.data
-            new.__save__()
-            return new
+        try:
+            '''Rename a database or save a temp database with a usable name.'''
+            if name and types:
+                self.temp=False
+                self.table_name=name
+                self.types=types
+                new=self.__make__()
+                new.data=self.data
+                new.__save__()
+                return new
+        except Exception as e:
+            return f"Error saving database: {e}"
         
         '''Commit changes to database. Call using save function in main file'''
         if name==None or name==self.table_name:
