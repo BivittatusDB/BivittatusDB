@@ -15,7 +15,12 @@ class database:
 
     def load_table(self, table_name:str):
         '''load preexisting tables from the database.'''
-        return table(self.database_name, table_name)
+        try:
+            return table(self.database_name, table_name)
+        except Exception as e:
+            print(f"Error loading table {table_name} from database {self.database_name}: {e}")
+            return None
+
     
     def init(self):
         '''initiate a new database. returns self to allow shorter code'''

@@ -8,6 +8,7 @@ class table(metaclass=TableMeta):
         self.database=database
         self.table_name=table_name
         self.temp=temp
+        self.data = None  # Make sure that 'data' is defined in the constructor.
         if self.temp==False:
             self.__read__()
         else:
@@ -30,9 +31,26 @@ class table(metaclass=TableMeta):
 
     def __read__(self):
         '''Read data from a file'''
-        reader=io.read(self.database)
-        self.data=json.loads(reader.read_table(self.table_name))
-        self.columns=self.data.pop(0)
+        try:
+            reader = io.read(self.database)
+        except Exception as e:
+            print(f"Error reading the database:  {e}")
+            return None
+
+        try:
+            table_data = reader.read_table(self.table_name)
+        except Exception as e:
+            print(f"Error reading the table {self.table_name}: {e}")
+            return None
+
+        try:
+            self.data = json.loads(table_data)
+        except json.JSONDecodeError as e:
+            print(f"Error loading JSON data: {e}")
+            return None
+
+        self.columns = self.data.pop(0)
+
         return self.data
 
     def __write__(self, new_table):
@@ -79,18 +97,23 @@ class table(metaclass=TableMeta):
     
     def __str__(self) -> str:
         '''return formatted data. Call using print(self)'''
-        table=""
-        data=self.data
-        first_row=self.columns
-        col_widths=[max(len(str(item)) for item in col) for col in zip(*(data+[first_row]))]
-        table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
-        table+="|"+"|".join(str(item).ljust(width) for item,width in zip(first_row, col_widths))+"|\n"
-        table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
-        for row in data:
-            table+="|"+"|".join(str(item).ljust(width) for item,width in zip(row, col_widths))+"|\n"
-        table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
-        return table
-    
+        if not self.data or not self.columns:
+            return "No data to show."
+        try:
+            table=""
+            data=self.data
+            first_row=self.columns
+            col_widths=[max(len(str(item)) for item in col) for col in zip(*(data+[first_row]))]
+            table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
+            table+="|"+"|".join(str(item).ljust(width) for item,width in zip(first_row, col_widths))+"|\n"
+            table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
+            for row in data:
+                table+="|"+"|".join(str(item).ljust(width) for item,width in zip(row, col_widths))+"|\n"
+            table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
+            return table
+        except Exception as e:
+            return f"Error generating the string representation of the table: {e}"
+ 
     def __load_metadata__(self):
         '''Load metadata from database. Used to make checks'''
         self.meta=BDB_metadata.table(self.database, self.table_name)
