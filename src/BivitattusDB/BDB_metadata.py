@@ -18,19 +18,19 @@ class table:
 
     def __read__(self):
         '''Read data from a file'''
-        reader=io.read(self.database)
-        self.data=json.loads(reader.read_table(self.table_name))
+        reader=io.HDF5Handler(self.database)
+        self.data=reader.read_table(self.table_name)
         self.columns=self.data.pop(0)
 
     def __write__(self, new_table):
         '''Write a new table to database. Not used currently'''
-        writer=io.write(self.database)
+        writer=io.HDF5Handler(self.database)
         data=json.dumps([self.columns]+self.data)
         writer.write_table(new_table, data)
     
     def __edit__(self):
         '''Change data in database table. Used in the __save__ method'''
-        editor=io.edit(self.database)
+        editor=io.HDF5Handler(self.database)
         new_data=json.dumps([self.columns]+self.data)
         editor.edit_table(self.table_name, new_data)
 

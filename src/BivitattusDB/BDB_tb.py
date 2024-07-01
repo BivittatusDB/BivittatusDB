@@ -38,15 +38,9 @@ class table(metaclass=TableMeta):
             return None
 
         try:
-            table_data = reader.read_table(self.table_name)
+            self.data = reader.read_table(self.table_name)
         except Exception as e:
             print(f"Error reading the table {self.table_name}: {e}")
-            return None
-
-        try:
-            self.data = json.loads(table_data)
-        except json.JSONDecodeError as e:
-            print(f"Error loading JSON data: {e}")
             return None
 
         self.columns = self.data.pop(0)
@@ -56,7 +50,7 @@ class table(metaclass=TableMeta):
     def __write__(self, new_table):
         try:
             '''Write a new table to database. Not used currently'''
-            writer=io.write(self.database)
+            writer=io.HDF5Handler(self.database)
             data=json.dumps([self.columns]+self.data)
             writer.write_table(new_table, data)
         except Exception as e:

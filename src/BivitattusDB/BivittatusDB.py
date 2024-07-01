@@ -21,7 +21,6 @@ class database:
             print(f"Error loading table {table_name} from database {self.database_name}: {e}")
             return None
 
-    
     def init(self):
         '''initiate a new database. returns self to allow shorter code'''
         with h5py.File(self.database_name+".pydb", "w") as outfile:
