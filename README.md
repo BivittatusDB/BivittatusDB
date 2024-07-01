@@ -17,6 +17,12 @@ This is a Python-based relational database management system (RDBMS) designed fr
 - **Transaction Management**: Implements transaction management to ensure data consistency.
 - **Security**: All databases are triple layer encrypted with a user defined password for each database.
 
+## Installation
+To install this, use the following command, as the latest commit could (and probably does) have a few errors, but the last stable release is working (as far as we know:
+```
+git clone https://github.com/HarbingerOfFire/bivittatusDB/releases/tag/v3.0.1
+```
+
 ## Examples
 See the examples directory and [wiki](https://github.com/HarbingerOfFire/PYDB/wiki) for examples off different operations.
 
