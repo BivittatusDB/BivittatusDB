@@ -34,7 +34,7 @@ class table(metaclass=TableMeta):
         try:
             reader = io.HDF5Handler(self.database)
         except Exception as e:
-            print(f"Error reading the database:  {e}")
+            print(f"Error reading the database: {e}")
             return None
 
         try:
@@ -43,7 +43,23 @@ class table(metaclass=TableMeta):
             print(f"Error reading the table {self.table_name}: {e}")
             return None
 
-        self.columns = self.data.pop(0)
+        print(f"Value of self.data before processing: {self.data}")
+
+        # Attempt to decode JSON if data appears to be a JSON string
+        if isinstance(self.data, str):
+            try:
+                self.data = json.loads(self.data)
+                print(f"Value of self.data after JSON decoding: {self.data}")
+            except json.JSONDecodeError:
+                print("Data is not a valid JSON string.")
+                return None
+
+        # Check if self.data is a list
+        if isinstance(self.data, list):
+            self.columns = self.data.pop(0)
+        else:
+            print(f"Unexpected data format: {type(self.data)}")
+            return None
 
         return self.data
 
