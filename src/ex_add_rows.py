@@ -1,9 +1,9 @@
 #make sure to run inside the same directory as BivittatusDB, not the example directory.
 import BivittatusDB as bdb
 
-test_db=bdb.database("test").init()
+test_db=bdb.database("test", True)
 
-tb1=test_db.make_table("table1", 
+tb1=test_db.New_table("table1", 
                        ("id", "name"), 
                        (int(), str()), 
                        "id")

@@ -1,9 +1,11 @@
-import BDB_io as io, json, datetime, BDB_metadata
+import datetime, BDB_metadata
+from BDB_io import DBio_lib
 import h5py
 from metaclass import *
 
 class table(metaclass=TableMeta):
-    def __init__(self, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+    def __init__(self, handler:DBio_lib, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+        self.io=handler
         self.autocommit=False
         self.database=database
         self.table_name=table_name
@@ -32,67 +34,29 @@ class table(metaclass=TableMeta):
     def __read__(self):
         '''Read data from a file'''
         try:
-            reader = io.HDF5Handler(self.database)
-        except Exception as e:
-            print(f"Error reading the database: {e}")
-            return None
+            self.data=data=self.io.ReadTable(self.table_name)
+            self.columns=self.data.pop(0)
+        except:
+            raise BDBException.ReadError(f"Courld not read table {self.table_name}")
 
-        try:
-            self.data = reader.read_table(self.table_name)
-        except Exception as e:
-            print(f"Error reading the table {self.table_name}: {e}")
-            return None
-
-        print(f"Value of self.data before processing: {self.data}")
-
-        # Attempt to decode JSON if data appears to be a JSON string
-        if isinstance(self.data, str):
-            try:
-                self.data = json.loads(self.data)
-                print(f"Value of self.data after JSON decoding: {self.data}")
-            except json.JSONDecodeError:
-                print("Data is not a valid JSON string.")
-                return None
-
-        # Check if self.data is a list
-        if isinstance(self.data, list):
-            self.columns = self.data.pop(0)
-        else:
-            print(f"Unexpected data format: {type(self.data)}")
-            return None
-
-        return self.data
-
-    def __write__(self, new_table):
-        try:
-            '''Write a new table to database. Not used currently'''
-            writer=io.HDF5Handler(self.database)
-            data=json.dumps([self.columns]+self.data)
-            writer.write_table(new_table, data)
-        except Exception as e:
-            return f"Error writing: {e}"
-    
     def __edit__(self):
+        '''Change data in database table. Used in the __save__ method'''
         try:
-            '''Change data in database table. Used in the __save__ method'''
-            editor=io.HDF5Handler(self.database)
-            new_data=json.dumps([self.columns]+self.data)
-            editor.edit_table(self.table_name, new_data)
-        except Exception as e:
-            return f"Error editing data: {e}"
+            data=[self.columns]+self.data
+            self.io.UpdateTable(self.table_name, data)
+        except:
+            raise BDBException.EditError(f"Could not update table {self.table_name}")
 
     def __make__(self):
         try:
-            '''make a new table, similar to that used in database class, except no primary keys and accepts existing data'''
-            with h5py.File(self.database+".pydb", "a") as editfile:
-                editfile.create_dataset(f"/{self.table_name}", data=json.dumps([self.columns]))
-                metadata=[("Data", "Type")]
-                for column, value in zip(self.columns, self.types):
-                    metadata.append((column, value))
-                editfile.create_dataset(f"meta_{self.table_name}", data=json.dumps(metadata))
-            return table(self.database, self.table_name)
-        except Exception as e:
-            return f"Error making a new table: {e}"
+            self.io.CreateTable(self.table_name, [self.columns])
+            metadata=[("Data", "Type")]
+            for column, value in zip(self.columns, self.types):
+                metadata.append((column, value))
+                self.io.CreateTable("meta_"+self.table_name, metadata)
+                return table(self.io, self.database, self.table_name)
+        except:
+            raise BDBException.CreationError(f"Could not create table {self.table_name}")
 
     def __save__(self, name=None, types=None):
         try:
@@ -138,7 +102,7 @@ class table(metaclass=TableMeta):
  
     def __load_metadata__(self):
         '''Load metadata from database. Used to make checks'''
-        self.meta=BDB_metadata.table(self.database, self.table_name)
+        self.meta=BDB_metadata.table(self.io, self.database, self.table_name)
         return self.meta
 
     def __len__(self)->int:

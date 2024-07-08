@@ -1,5 +1,5 @@
 import binascii
-import os
+import os, bz2
 from Crypto.Cipher import AES, Blowfish, Salsa20
 from Crypto import Random
 
@@ -143,4 +143,3 @@ class File_Enc:
 
     def pad_keys(self, passkey, nonce):
         return self.pad(passkey, 32), self.pad(nonce, 8)
-    

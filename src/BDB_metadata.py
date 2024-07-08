@@ -1,12 +1,13 @@
 #Class for making metadata tables, simplified version of the class in ./py_table.py
 #no checks for data types, loading metadata (for obvious reasons), primary keys.
 #In short: metadata table with no metametadata
-
-import BDB_io as io, json, datetime
+from BDB_io import DBio_lib
+import datetime
 from typing import Union
 
 class table:
-    def __init__(self, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+    def __init__(self, handler:DBio_lib, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+        self.io=handler
         self.database=database
         self.table_name="meta_"+table_name
         self.temp=temp
@@ -18,24 +19,16 @@ class table:
 
     def __read__(self):
         '''Read data from a file'''
-        reader=io.HDF5Handler(self.database)
-        self.data=reader.read_table(self.table_name)
+        self.data=self.io.ReadTable(self.table_name)
         self.columns=self.data.pop(0)
-
-    def __write__(self, new_table):
-        '''Write a new table to database. Not used currently'''
-        writer=io.HDF5Handler(self.database)
-        data=json.dumps([self.columns]+self.data)
-        writer.write_table(new_table, data)
     
     def __edit__(self):
         '''Change data in database table. Used in the __save__ method'''
-        editor=io.HDF5Handler(self.database)
-        new_data=json.dumps([self.columns]+self.data)
-        editor.edit_table(self.table_name, new_data)
+        data=[self.columns]+self.data
+        self.io.UpdateTable(self.table_name, data)
 
     def __save__(self):
-        '''Commit changes to database. Call using save function in main file'''
+        '''Commit changes to database. Call using save aggregate function in main file'''
         self.temp=False
         self.__edit__()
 
@@ -180,3 +173,6 @@ class table:
         for row in rows:
             table_data.append(self.data[row])
         return table(self.database, f"pydb_{time}", True, table_data)
+    
+if __name__=='__main__':
+    pass
