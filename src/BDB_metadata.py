@@ -1,15 +1,15 @@
 #Class for making metadata tables, simplified version of the class in ./py_table.py
-#no checks for data types, loading metadata (for obvious reasons), primary keys.
-#In short: metadata table with no metametadata
-from BDB_io import DBio_lib
+#no checks for data types, loading metadata (for obvious reasons), or primary keys.
+#In short: metadata table with no hypermetadata
+from BDB_io import Handler
 import datetime
 from typing import Union
 
 class table:
-    def __init__(self, handler:DBio_lib, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+    def __init__(self, handler:Handler, database, table_name, temp:bool=False, temp_data:list=None) -> None:
         self.io=handler
         self.database=database
-        self.table_name="meta_"+table_name
+        self.table_name=table_name
         self.temp=temp
         if self.temp==False:
             self.__read__()
@@ -19,11 +19,11 @@ class table:
 
     def __read__(self):
         '''Read data from a file'''
-        self.data=self.io.ReadTable(self.table_name)
+        self.data=self.io.ReadMetadata(self.table_name)
         self.columns=self.data.pop(0)
     
     def __edit__(self):
-        '''Change data in database table. Used in the __save__ method'''
+        '''Change data in database table. Used in the __save__ method. Should not be used. Metadata should not be changed.'''
         data=[self.columns]+self.data
         self.io.UpdateTable(self.table_name, data)
 

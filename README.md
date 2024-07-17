@@ -15,7 +15,7 @@ This is a Python-based relational database management system (RDBMS) designed fr
 - **Basic CRUD Operations**: Supports basic Create, Read, Update, and Delete operations.
 - **Indexing**: Efficient data retrieval with indexing mechanisms.
 - **Transaction Management**: Implements transaction management to ensure data consistency.
-- **Security**: All databases are triple layer encrypted with a user defined password for each database.
+- **Security**: All databases are asymmetrically encrypted with a user defined password for each database.
 
 ## Installation
 To install this, use the following command, as the latest commit could (and probably does) have a few errors, but the last stable release is working (as far as we know):
@@ -32,7 +32,7 @@ See the examples directory and [wiki](https://github.com/HarbingerOfFire/PYDB/wi
 3. Follow the information from the [wiki](https://github.com/HarbingerOfFire/PYDB/wiki) for more info on specific usage
 
 ## Dependencies
-The databases are saved in h5 files, and as such requires the h5py module, as seen in the [`requirements.txt`](.github/requirements.txt) file.
+The databases are saved in hybrid-asymmetrically encrypted and therefore need encryption handlers, as seen in the [`requirements.txt`](.github/requirements.txt) file.
 ```bash
 pip install -r .github/requirements.txt
 ```
@@ -47,6 +47,6 @@ This README.md file provides an overview of the operator-based relational databa
 
 ## Known Issues: 
 1. Code must be run inside the source file in order to find the database handler code `lib_bdb.so`.
-2. `lib_bdb.so` does not successfully check if table already exists. (see. [BivittatusDatabase](https://github.com/HarbingerOfFire/BivitattusDatabase))
-3. Example files no longer show basic ideas. An updated example file is in `/src` as `ex_add_rows.py`. 
-4. No data compression with the new updates (fix planned)
+2. `lib_bdb.so` does not successfully check if table already exists. (see. [BivittatusDatabase](https://github.com/HarbingerOfFire/BivitattusDatabase)) [**FIXED 7/17/24**]
+3. Example files no longer show basic ideas. An updated example file is in `/src` as `ex_add_rows.py`. [**NEEDS CONFIRMATION**]
+4. No data compression with the new updates (fix planned) [**FIXED 7/17/24**]

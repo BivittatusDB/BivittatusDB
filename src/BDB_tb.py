@@ -1,10 +1,9 @@
 import datetime, BDB_metadata
-from BDB_io import DBio_lib
-import h5py
+from BDB_io import Handler
 from metaclass import *
 
 class table(metaclass=TableMeta):
-    def __init__(self, handler:DBio_lib, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+    def __init__(self, handler:Handler, database, table_name, temp:bool=False, temp_data:list=None) -> None:
         self.io=handler
         self.autocommit=False
         self.database=database
@@ -49,12 +48,11 @@ class table(metaclass=TableMeta):
 
     def __make__(self):
         try:
-            self.io.CreateTable(self.table_name, [self.columns])
             metadata=[("Data", "Type")]
             for column, value in zip(self.columns, self.types):
                 metadata.append((column, value))
-                self.io.CreateTable("meta_"+self.table_name, metadata)
-                return table(self.io, self.database, self.table_name)
+            self.io.CreateTable(self.table_name, [self.columns], metadata)
+            return table(self.io, self.database, self.table_name)
         except:
             raise BDBException.CreationError(f"Could not create table {self.table_name}")
 

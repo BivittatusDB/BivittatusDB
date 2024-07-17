@@ -1,145 +1,80 @@
-import binascii
-import os, bz2
-from Crypto.Cipher import AES, Blowfish, Salsa20
-from Crypto import Random
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP, AES
+from Crypto.Random import get_random_bytes, new
+from Crypto.Util.Padding import pad, unpad
 
-# Define AES encryption initialization vectors
-class Aes_enc:
-    def pad(self, s, block_size):
-        padding_len = block_size - len(s) % block_size
-        return s + bytes([padding_len]) * padding_len
+class RSAFileEncryptor:
+    def __init__(self, database):
+        self.key_size = 4096
+        self.database = database
+        self.private_key_file = f"./{self.database}/private.pem"
+        self.public_key_file = f"./{self.database}/public.pem"
 
-    def unpad(self, s):
-        padding_len = s[-1]
-        return s[:-padding_len]
+    def generate_keys(self):
+        key = RSA.generate(self.key_size)
+        private_key = key.export_key()
+        public_key = key.publickey().export_key()
 
-    def encrypt(self, message, key):
-        block_size = AES.block_size
-        message = self.pad(message, block_size)
-        iv = Random.new().read(block_size)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        return iv + cipher.encrypt(message)
+        with open(self.private_key_file, "wb") as priv_file:
+            priv_file.write(private_key)
 
-    def decrypt(self, ciphertext, key):
-        block_size = AES.block_size
-        iv = ciphertext[:block_size]
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        plaintext = cipher.decrypt(ciphertext[block_size:])
-        return self.unpad(plaintext)
+        with open(self.public_key_file, "wb") as pub_file:
+            pub_file.write(public_key)
 
-    def enc_file(self, filename, passkey):
-        with open(filename, 'rb') as fo:
-            plaintext = fo.read()
-        enc = self.encrypt(plaintext, passkey)
-        enc_hex = binascii.hexlify(enc)
-        with open(filename, 'wb') as fo:
-            fo.write(enc_hex)
+    def encrypt_file(self, input_file):
+        with open(self.public_key_file, "rb") as pub_file:
+            public_key = RSA.import_key(pub_file.read())
 
-    def dec_file(self, filename, passkey):
-        with open(filename, 'rb') as fo:
-            ciphertext_hex = fo.read()
-        ciphertext = binascii.unhexlify(ciphertext_hex)
-        dec = self.decrypt(ciphertext, passkey)
-        with open(filename, 'wb') as fo:
-            fo.write(dec)
-            fo.flush()
-            os.fsync(fo.fileno())
+        cipher_rsa = PKCS1_OAEP.new(public_key)
 
-# Define Blowfish encryption using initialization vectors
-class Bfs_enc:
-    def pad(self, s, block_size):
-        padding_len = block_size - len(s) % block_size
-        return s + bytes([padding_len]) * padding_len
+        # Generate symmetric key (AES)
+        session_key = get_random_bytes(16)
 
-    def unpad(self, s):
-        padding_len = s[-1]
-        return s[:-padding_len]
+        # Encrypt the session key with RSA
+        encrypted_session_key = cipher_rsa.encrypt(session_key)
 
-    def encrypt(self, message, key):
-        block_size = Blowfish.block_size
-        message = self.pad(message, block_size)
-        iv = Random.new().read(block_size)
-        cipher = Blowfish.new(key, Blowfish.MODE_CBC, iv)
-        return iv + cipher.encrypt(message)
+        # Encrypt file data with AES
+        with open(input_file, "rb") as f:
+            file_data = f.read()
 
-    def decrypt(self, ciphertext, key):
-        block_size = Blowfish.block_size
-        iv = ciphertext[:block_size]
-        cipher = Blowfish.new(key, Blowfish.MODE_CBC, iv)
-        plaintext = cipher.decrypt(ciphertext[block_size:])
-        return self.unpad(plaintext)
+        cipher_aes = AES.new(session_key, AES.MODE_CBC)
+        encrypted_data = cipher_aes.encrypt(pad(file_data, AES.block_size))
 
-    def enc_file(self, filename, passkey):
-        with open(filename, 'rb') as fo:
-            plaintext = fo.read()
-        enc = self.encrypt(plaintext, passkey)
-        enc_hex = binascii.hexlify(enc)
-        with open(filename, 'wb') as fo:
-            fo.write(enc_hex)
+        # Save the encrypted session key and file data
+        with open(input_file, "wb") as f:
+            f.write(cipher_aes.iv)
+            f.write(encrypted_session_key)
+            f.write(encrypted_data)
 
-    def dec_file(self, filename, passkey):
-        with open(filename, 'rb') as fo:
-            ciphertext_hex = fo.read()
-        ciphertext = binascii.unhexlify(ciphertext_hex)
-        dec = self.decrypt(ciphertext, passkey)
-        with open(filename, 'wb') as fo:
-            fo.write(dec)
-            fo.flush()
-            os.fsync(fo.fileno())
+    def decrypt_file(self, input_file):
+        with open(self.private_key_file, "rb") as priv_file:
+            private_key = RSA.import_key(priv_file.read())
 
-# Define Salsa20 encryption using nonce
-class Sla_enc:
-    def encrypt(self, key, nonce, message):
-        cipher = Salsa20.new(key=key, nonce=nonce)
-        ciphertext = cipher.encrypt(message)
-        return ciphertext
+        cipher_rsa = PKCS1_OAEP.new(private_key)
 
-    def decrypt(self, key, nonce, ciphertext):
-        cipher = Salsa20.new(key=key, nonce=nonce)
-        plaintext = cipher.decrypt(ciphertext)
-        return plaintext
+        # Read the encrypted session key and file data
+        with open(input_file, "rb") as f:
+            iv = f.read(16)
+            encrypted_session_key = f.read(512)
+            encrypted_data = f.read()
 
-    def enc_file(self, filename, passkey, nonce):
-        with open(filename, 'rb') as fo:
-            plaintext = fo.read()
-        enc = self.encrypt(passkey, nonce, plaintext)
-        enc_hex = binascii.hexlify(enc)
-        with open(filename, 'wb') as fo:
-            fo.write(enc_hex)
+        # Decrypt the session key with RSA
+        session_key = cipher_rsa.decrypt(encrypted_session_key)
 
-    def dec_file(self, filename, passkey, nonce):
-        with open(filename, 'rb') as fo:
-            ciphertext_hex = fo.read()
-        ciphertext = binascii.unhexlify(ciphertext_hex)
-        dec = self.decrypt(passkey, nonce, ciphertext)
-        with open(filename, 'wb') as fo:
-            fo.write(dec)
-            fo.flush()
-            os.fsync(fo.fileno())
+        # Decrypt file data with AES
+        cipher_aes = AES.new(session_key, AES.MODE_CBC, iv)
+        decrypted_data = unpad(cipher_aes.decrypt(encrypted_data), AES.block_size)
 
-# Encrypt file in one go
-class File_Enc:
-    def __init__(self):
-        self.sla = Sla_enc()
-        self.bfs = Bfs_enc()
-        self.aes = Aes_enc()
+        with open(input_file, "wb") as f:
+            f.write(decrypted_data)
 
-    def enc(self, filename, passkey):
-        passkey, nonce = self.pad_keys(passkey, passkey[::-1])
-        self.sla.enc_file(filename, passkey, nonce)
-        self.bfs.enc_file(filename, passkey)
-        self.aes.enc_file(filename, passkey)
+# Example usage:
+if __name__ == "__main__":
+    encryptor = RSAFileEncryptor("Hello")
+    encryptor.generate_keys()
 
-    def dec(self, filename, passkey):
-        passkey, nonce = self.pad_keys(passkey, passkey[::-1])
-        self.aes.dec_file(filename, passkey)
-        self.bfs.dec_file(filename, passkey)
-        self.sla.dec_file(filename, passkey, nonce)
+    # Encrypt the file
+    encryptor.encrypt_file("Hello/plainfile.txt")
 
-    def pad(self, obj, size):
-        if len(obj) > size:
-            return obj[:size]
-        return obj + b"\0" * (size - len(obj))
-
-    def pad_keys(self, passkey, nonce):
-        return self.pad(passkey, 32), self.pad(nonce, 8)
+    # Decrypt the file
+    encryptor.decrypt_file("Hello/encryptedfile.bin")
