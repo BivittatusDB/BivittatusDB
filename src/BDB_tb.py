@@ -186,7 +186,7 @@ class table(metaclass=TableMeta):
         return True
     
     def __load_foreign__(self, other):
-        other=table(self.database, other)
+        other=table(self.io, self.database, other)
         return other
 
     def __check_foreign__(self, new_data:tuple)->bool:
@@ -234,7 +234,7 @@ class table(metaclass=TableMeta):
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __ne__(self, value):
         '''return table of all value meeting operand !='''
@@ -243,7 +243,7 @@ class table(metaclass=TableMeta):
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __lt__(self, value):
         '''return table of all value meeting operand <'''
@@ -252,7 +252,7 @@ class table(metaclass=TableMeta):
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __le__(self, value):
         '''return table of all value meeting operand <='''
@@ -261,7 +261,7 @@ class table(metaclass=TableMeta):
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __gt__(self, value):
         '''return table of all value meeting operand >'''
@@ -270,7 +270,7 @@ class table(metaclass=TableMeta):
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __ge__(self, value):
         '''return table of all value meeting operand >'''
@@ -279,7 +279,7 @@ class table(metaclass=TableMeta):
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __lshift__(self, other):
         '''left join tables. call using table1<<table2'''
@@ -299,7 +299,7 @@ class table(metaclass=TableMeta):
             combine_row={**left_row, **{col:matched_row.get(col, None) for col in right_cols if col not in left_cols}}
             joined_table.append(combine_row)
         joined_table=self.__conv_dict_list__(joined_table, other)
-        return table(self.database, f"pydb_{time}", True, joined_table)
+        return table(self.io, self.database, f"pydb_{time}", True, joined_table)
 
     def __rshift__(self, other):
         '''right join tables. Call using table1>>table2'''
@@ -320,7 +320,7 @@ class table(metaclass=TableMeta):
             combined_row = {**{col: matched_row.get(col, None) for col in left_cols if col not in right_cols}, **right_row}
             joined_table.append(combined_row)
         joined_table=self.__conv_dict_list__(joined_table, other)
-        return table(self.database, f"pydb_{time}", True, joined_table)
+        return table(self.io, self.database, f"pydb_{time}", True, joined_table)
 
     def __xor__(self, other):
         '''full join tables. Call using table1^table2'''
@@ -329,7 +329,7 @@ class table(metaclass=TableMeta):
         rjoin = (self >> other).__conv_list_dict__()
         full_join = {tuple(row.items()): row for row in ljoin+rjoin}.values()
         full_join = self.__conv_dict_list__(full_join, other)
-        return table(self.database, f"pydb_{time}", True, full_join)
+        return table(self.io, self.database, f"pydb_{time}", True, full_join)
     
     def __matmul__(self, bool):
         '''set autocommit. call using table@bdb.ON or table@bdb.OFF'''
@@ -364,7 +364,7 @@ class table(metaclass=TableMeta):
 class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):
         data=[other.columns] + other.data
-        rollback=table(other.database, "rollback"+other.table_name, True, data)
+        rollback=table(other.io, other.database, "rollback"+other.table_name, True, data)
         other.rollback = rollback
 
 class ROLLBACK(metaclass=RollbackMeta):

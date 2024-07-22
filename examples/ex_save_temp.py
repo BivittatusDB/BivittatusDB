@@ -2,8 +2,8 @@ import BivittatusDB as bdb
 
 test_db=bdb.database("test").init()
 
-tb1=test_db.make_table("table1", ("id", "name"), (int(), str()), "id")
-tb2=test_db.make_table("table2", ("id", "language"), (int(), str()), "id")
+tb1=test_db.New_table("table1", ("id", "name"), (int(), str()), "id")
+tb2=test_db.New_table("table2", ("id", "language"), (int(), str()), "id")
 
 tb1+(1, "Alice")
 tb1+(2, "Bob")

@@ -3,7 +3,7 @@ import BivittatusDB as bdb
 
 test_db=bdb.database("test").init()
 
-tb1=test_db.make_table("table1", 
+tb1=test_db.New_table("table1", 
                        ("id", "name", "age"), 
                        (int(), str(), int()), 
                        "id")

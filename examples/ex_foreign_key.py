@@ -3,13 +3,13 @@ import BivittatusDB as bdb
 
 test_db=bdb.database("test").init()
 
-tb2=test_db.make_table("table2", 
+tb2=test_db.New_table("table2", 
                        ("id", "name"), 
                        (int(), str()), 
                        "id")
 tb2@bdb.ON # Necissary for the referenced table or the refrencer reads wrong data
 
-tb1=test_db.make_table("table1", 
+tb1=test_db.New_table("table1", 
                        ("id", "name"), 
                        (int(), str()), 
                        "id",
