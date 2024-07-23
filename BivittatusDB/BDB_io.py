@@ -4,7 +4,7 @@ from json import dumps, loads
 from gzip import compress, decompress
 from binascii import hexlify, unhexlify
 
-io_lib = ctypes.CDLL("./lib_bdb.so")
+io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb.so")
 class _CHANDLE:
     def __init__(self) -> None:
         pass
