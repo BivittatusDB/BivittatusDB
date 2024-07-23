@@ -1,6 +1,10 @@
-from bdb_aggregate import *
-from BDB_tb import *
-from BDB_io import Handler
+import metaclass
+try: 
+    from bdb_aggregate import *
+    from BDB_tb import *
+    from BDB_io import Handler
+except:
+    raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
 class database:
     def __init__(self, database_name:str, Encrpyt:bool=False):
@@ -20,8 +24,7 @@ class database:
         try:
             return table(self.db, self.database_name, table_name)
         except Exception as e:
-            print(f"Error loading table {table_name} from database {self.database_name}: {e}")
-            return None
+            raise metaclass.BDBException.IOError(f"Error finding table {table_name}")
     
     def New_table(self, name:str, columns:tuple, data_types:tuple, primary:str=None, foreign:str=None):
         '''Make a new table and specify the name, columns and data types. Optionally assign primary key. Returns the table'''

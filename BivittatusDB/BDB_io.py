@@ -1,10 +1,19 @@
-from encrypt import *
-import ctypes, os, getpass
-from json import dumps, loads
-from gzip import compress, decompress
-from binascii import hexlify, unhexlify
+import metaclass
+try: 
+    from encrypt import *
+    import ctypes, os, getpass
+    from json import dumps, loads
+    from gzip import compress, decompress
+    from binascii import hexlify, unhexlify
+except:
+    raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
-io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb.so")
+
+try:
+    io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb.so")
+except:
+    raise metaclass.BDBException.ImportError(f"Could not find library lib_bdb.so")
+
 class _CHANDLE:
     def __init__(self) -> None:
         pass
@@ -42,7 +51,6 @@ class _CHANDLE:
         io_lib.CheckDataSet.argtypes = [ctypes.c_char_p]
         io_lib.CheckDataSet.restype=ctypes.c_int
         return bool(io_lib.CheckDataSet(f"./{database.decode()}/{tablename.decode()}".encode()))
-
 
 class Handler:
     def __init__(self, database_name:str, Encrypted:bool=False) -> None:
@@ -90,69 +98,93 @@ class Handler:
 
     def secure(self):
         try:
-            self.password
+            try:
+                self.password
+            except:
+                self.password=getpass.getpass(f"Enter password for {self.database}: ")
+            with open(f"./{self.database}/private.pem", "rb") as f:
+                key=f.read()
+            key=self.pad(key, 256)
+            password=self.pad(self.password.encode(), 32)
+            iv=new().read(16)
+            cipher=AES.new(password, AES.MODE_CBC, iv)
+            ciphertext=hexlify(iv+cipher.encrypt(key))
+            with open(f"./{self.database}/private.pem", "wb") as f:
+                f.write(ciphertext)
         except:
-            self.password=getpass.getpass(f"Enter password for {self.database}: ")
-        with open(f"./{self.database}/private.pem", "rb") as f:
-            key=f.read()
-        key=self.pad(key, 256)
-        password=self.pad(self.password.encode(), 32)
-        iv=new().read(16)
-        cipher=AES.new(password, AES.MODE_CBC, iv)
-        ciphertext=hexlify(iv+cipher.encrypt(key))
-        with open(f"./{self.database}/private.pem", "wb") as f:
-            f.write(ciphertext)
+            raise metaclass.BDBException.EncryptionError("Problem encrypting data")
 
     def remove_secure(self):
         try:
-            self.password
+            try:
+                self.password
+            except:
+                self.password=getpass.getpass(f"Enter password for {self.database}: ")
+            with open(f"./{self.database}/private.pem", "rb") as f:
+                key=unhexlify(f.read())
+            password=self.pad(self.password.encode(), 32)
+            block=AES.block_size
+            iv = key[:block]
+            cipher=AES.new(password, AES.MODE_CBC, iv)
+            key=self.unpad(cipher.decrypt(key[block:]))
+            with open(f"./{self.database}/private.pem", "w") as f:
+                f.write(key.decode())
         except:
-            self.password=getpass.getpass(f"Enter password for {self.database}: ")
-        with open(f"./{self.database}/private.pem", "rb") as f:
-            key=unhexlify(f.read())
-        password=self.pad(self.password.encode(), 32)
-        block=AES.block_size
-        iv = key[:block]
-        cipher=AES.new(password, AES.MODE_CBC, iv)
-        key=self.unpad(cipher.decrypt(key[block:]))
-        with open(f"./{self.database}/private.pem", "w") as f:
-            f.write(key.decode())
+            raise metaclass.BDBException.EncryptionError("Problem Decrypting data")
 
     def CreateTable(self, tablename:str, data:list, metadata:list):
-        data=hexlify(compress(dumps(data).encode()))
-        metadata=hexlify(compress(dumps(metadata).encode()))
-        self.CHANDLE.CreateTable(self.database.encode(), (tablename+self.ext).encode(), data)
-        self.CHANDLE.AddMetaData(self.database.encode(), (tablename+self.ext).encode(), metadata)
-        self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+        try:
+            data=hexlify(compress(dumps(data).encode()))
+            metadata=hexlify(compress(dumps(metadata).encode()))
+            self.CHANDLE.CreateTable(self.database.encode(), (tablename+self.ext).encode(), data)
+            self.CHANDLE.AddMetaData(self.database.encode(), (tablename+self.ext).encode(), metadata)
+            self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+        except:
+            raise metaclass.BDBException.CreationError(f"Problem Creating table {tablename}")
 
     def DeleteTable(self, tablename:str):
-        self.CHANDLE.DeleteTable(self.database.encode(), (tablename+self.ext).encode())
+        try:
+            self.CHANDLE.DeleteTable(self.database.encode(), (tablename+self.ext).encode())
+        except:
+            raise metaclass.BDBException.DeletionError(f"Problem deleting table {tablename}")
 
     def UpdateTable(self, tablename:str, data:list):
-        self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-        data=hexlify(compress(dumps(data).encode()))
-        self.CHANDLE.UpdateTable(self.database.encode(),(tablename+self.ext).encode(), data)
-        self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+        try:
+            self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
+            data=hexlify(compress(dumps(data).encode()))
+            self.CHANDLE.UpdateTable(self.database.encode(),(tablename+self.ext).encode(), data)
+            self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+        except:
+            raise metaclass.BDBException.EditError(f"Error Updating file {tablename}")
 
     def UpdateMetaTable(self, tablename:str, metadata:list):
-        self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-        metadata=hexlify(compress(dumps(metadata).encode()))
-        self.CHANDLE.UpdateMetaTable(self.database.encode(),(tablename+self.ext).encode(), metadata)
-        self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+        try:
+            self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
+            metadata=hexlify(compress(dumps(metadata).encode()))
+            self.CHANDLE.UpdateMetaTable(self.database.encode(),(tablename+self.ext).encode(), metadata)
+            self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+        except:
+            raise metaclass.BDBException.EditError(f"Error updating metadata for file {tablename}")
 
     def ReadTable(self, tablename:str):
-        self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-        data=self.CHANDLE.ReadTable(self.database.encode(), (tablename+self.ext).encode(), False)
-        data=loads(decompress(unhexlify(data)).decode())
-        self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
-        return data
+        try:
+            self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
+            data=self.CHANDLE.ReadTable(self.database.encode(), (tablename+self.ext).encode(), False)
+            data=loads(decompress(unhexlify(data)).decode())
+            self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+            return data
+        except:
+            raise metaclass.BDBException.ReadError(f"Error Reading data from {tablename}")
     
     def ReadMetadata(self, tablename:str):
-        self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-        data=self.CHANDLE.ReadTable(self.database.encode(), (tablename+self.ext).encode(), True)
-        data=loads(decompress(unhexlify(data)).decode())
-        self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
-        return data
+        try:
+            self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
+            data=self.CHANDLE.ReadTable(self.database.encode(), (tablename+self.ext).encode(), True)
+            data=loads(decompress(unhexlify(data)).decode())
+            self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+            return data
+        except:
+            raise metaclass.BDBException.ReadError(f"Error reading metadata from {tablename}")
     
     def TableExists(self, tablename:str):
         return self.CHANDLE.CheckDataSet(self.database.encode(), (tablename+self.ext).encode())

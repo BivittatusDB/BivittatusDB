@@ -1,9 +1,14 @@
 #Class for making metadata tables, simplified version of the class in ./py_table.py
 #no checks for data types, loading metadata (for obvious reasons), or primary keys.
 #In short: metadata table with no hypermetadata
-from BDB_io import Handler
-import datetime
-from typing import Union
+
+import metaclass
+try: 
+    from BDB_io import Handler
+    import datetime
+    from typing import Union
+except:
+    raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
 class table:
     def __init__(self, handler:Handler, database, table_name, temp:bool=False, temp_data:list=None) -> None:
@@ -88,7 +93,7 @@ class table:
     def __contains__(self, item):
         '''checks to see if item is in data. Call using `item in self`'''
         if not self.column:
-            raise IndexError("Must index a column to search item")
+            raise metaclass.BDBException.ColumunError("Must index a column to search item")
         if item in self.column:
             del self.column
             return True
@@ -106,7 +111,7 @@ class table:
     def __find_compare__(self, operator:str, value):
         '''used to remove all data not meeting opperator requirments.'''
         if not self.column:
-            raise IndexError(f"Must Index Column to use comparison {operator}")
+            raise metaclass.BDBException.ColumunError(f"Must Index Column to use comparison {operator}")
         data=self.column
         rows=[]
         for i in range(len(data)):

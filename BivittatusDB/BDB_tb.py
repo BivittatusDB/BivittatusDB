@@ -1,6 +1,10 @@
-import datetime, BDB_metadata
-from BDB_io import Handler
-from metaclass import *
+import metaclass
+try:     
+    import datetime, BDB_metadata
+    from BDB_io import Handler
+    from metaclass import *
+except:
+    raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
 class table(metaclass=TableMeta):
     def __init__(self, handler:Handler, database, table_name, temp:bool=False, temp_data:list=None) -> None:
@@ -33,7 +37,7 @@ class table(metaclass=TableMeta):
     def __read__(self):
         '''Read data from a file'''
         try:
-            self.data=data=self.io.ReadTable(self.table_name)
+            self.data=self.io.ReadTable(self.table_name)
             self.columns=self.data.pop(0)
         except:
             raise BDBException.ReadError(f"Courld not read table {self.table_name}")
@@ -155,7 +159,7 @@ class table(metaclass=TableMeta):
     def __contains__(self, item):
         '''checks to see if item is in data. Call using `item in self`'''
         if not self.column and self.data:
-            raise IndexError("Must index a column to search item")
+            raise BDBException.ColumunError("Must index a column to search item")
         if item in self.column:
             del self.column
             return True
@@ -212,7 +216,7 @@ class table(metaclass=TableMeta):
     def __find_compare__(self, operator:str, value):
         '''used to remove all data not meeting opperator requirments.'''
         if not self.column:
-            raise IndexError(f"Must Index Column to use comparison {operator}")
+            raise BDBException.ColumunError(f"Must Index Column to use comparison {operator}")
         data=self.column
         rows=[]
         for i in range(len(data)):

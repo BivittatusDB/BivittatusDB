@@ -31,7 +31,12 @@ class CommitMeta(type):
 # This next section is used to make errors. for the most part just follow the design inside the class
 # class <ExceptionName>(Exception): ...
 class BDBException:
-    class ReadError(Exception): ...
-    class EditError(Exception): ...
-    class DeletionError(Exception): ...
-    class CreationError(Exception): ...
+    class ReadError(Exception): ... #For problems reading a file
+    class EditError(Exception): ... #For Problems Editing a file
+    class DeletionError(Exception): ... #For Problems Deleting a file
+    class CreationError(Exception): ... #For problems Making a file
+    class IOError(Exception): ... #For problems finding a file
+    class ImportError(Exception): ... #for problems importing code
+    class EncryptionError(Exception): ... # for problems with encryption/decryption
+    class AggregateError(Exception): ... #for problems using aggregate functions
+    class ColumunError(Exception): ... #for when column is not specified for dependant functions
