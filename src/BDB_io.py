@@ -34,6 +34,10 @@ class _CHANDLE:
         io_lib.UpdateTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
         io_lib.UpdateTable(database, tablename, data)
 
+    def UpdateMetaTable(self, database:bytes, tablename:bytes, metadata:bytes):
+        io_lib.UpdateMetaTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+        io_lib.UpdateMetaTable(database, tablename, metadata)
+
     def CheckDataSet(self, database:bytes, tablename:bytes):
         io_lib.CheckDataSet.argtypes = [ctypes.c_char_p]
         io_lib.CheckDataSet.restype=ctypes.c_int
@@ -128,6 +132,12 @@ class Handler:
         self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
         data=hexlify(compress(dumps(data).encode()))
         self.CHANDLE.UpdateTable(self.database.encode(),(tablename+self.ext).encode(), data)
+        self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
+
+    def UpdateMetaTable(self, tablename:str, metadata:list):
+        self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
+        metadata=hexlify(compress(dumps(metadata).encode()))
+        self.CHANDLE.UpdateMetaTable(self.database.encode(),(tablename+self.ext).encode(), metadata)
         self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
 
     def ReadTable(self, tablename:str):

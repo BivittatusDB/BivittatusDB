@@ -23,9 +23,9 @@ class table:
         self.columns=self.data.pop(0)
     
     def __edit__(self):
-        '''Change data in database table. Used in the __save__ method. Should not be used. Metadata should not be changed.'''
+        '''Change data in database table. Used in the __save__ method.'''
         data=[self.columns]+self.data
-        self.io.UpdateTable(self.table_name, data)
+        self.io.UpdateMetaTable(self.table_name, data)
 
     def __save__(self):
         '''Commit changes to database. Call using save aggregate function in main file'''
