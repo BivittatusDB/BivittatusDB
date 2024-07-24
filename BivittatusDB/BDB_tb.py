@@ -166,8 +166,9 @@ class table(metaclass=TableMeta):
         del self.column
         return False
     
-    def __mul__(self, key:int):
+    def __mul__(self, key):
         '''sort a the data by specified column (key). call using self*key (0 indexed)'''
+        key=self.__fix_index__(key)
         self.data=sorted(self.data, key=lambda x: x[key])
         self.__try_commit__()
         return self

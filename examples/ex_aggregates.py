@@ -1,23 +1,27 @@
 #make sure to run inside the same directory as BivittatusDB, not the example directory.
 import BivittatusDB as bdb
 
+#drop pre-existing databases (for best practice and to prevent errors)
 try: bdb.drop("test")
 except: pass
 
+#initialize the database
 test_db=bdb.database("test").init()
 
+#create a new table 
 tb1=test_db.New_table("table1", 
                        ("id", "name", "age"), 
                        (int(), str(), int()), 
                        "id")
-
+#add rows to the table
 tb1+(1, "Alice", 24)
 tb1+(2, "Bob", 36)
 tb1+(3, "Cindy", 19)
 
+#aggregate functions defined so far
 print(tb1)
-print("Length:",bdb.COUNT(tb1))
-print("SUM:", bdb.SUM(tb1["age"]))
+print("Length:",bdb.COUNT(tb1)) 
+print("SUM:", bdb.SUM(tb1["age"])) 
 print("AVG:",bdb.AVG(tb1["age"]))
 print("MIN:",bdb.MIN(tb1["age"]))
 print("MAX:",bdb.MAX(tb1["age"]))
