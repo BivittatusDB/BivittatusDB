@@ -1,6 +1,7 @@
 import metaclass
 try: 
     from statistics import *
+    import os
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -18,6 +19,13 @@ def scan(table):
     '''scans a table for errors if updated manually'''
     getattr(table, "__scan__")()
     return True
+
+def drop(database:str):
+    '''drops a database and allows for reinitialization'''
+    try:
+        os.rmdir(database)
+    except:
+        raise metaclass.BDBException.DeletionError("Could not drop database {database}")
 
 #True and False commands for auto commit
 ON=True

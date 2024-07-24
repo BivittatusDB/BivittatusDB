@@ -1,5 +1,8 @@
 import BivittatusDB as bdb
 
+try: bdb.drop("test")
+except: pass
+
 test_db=bdb.database("test").init()
 
 tb1=test_db.New_table("table1", ("id", "name"), (int(), str()), "id")
