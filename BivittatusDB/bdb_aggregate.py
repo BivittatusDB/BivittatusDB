@@ -1,7 +1,7 @@
 import metaclass
 try: 
     from statistics import *
-    import os
+    import shutil
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -23,7 +23,7 @@ def scan(table):
 def drop(database:str):
     '''drops a database and allows for reinitialization'''
     try:
-        os.rmdir(database)
+        shutil.rmtree(database)
     except:
         raise metaclass.BDBException.DeletionError("Could not drop database {database}")
 
