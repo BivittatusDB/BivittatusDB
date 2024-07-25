@@ -2,7 +2,7 @@
 <img src="./logo.png" />
 </p>
 
-![Static Badge](https://img.shields.io/badge/Version-4.0.3-%20green)
+![Static Badge](https://img.shields.io/badge/Version-4.1.0-%20green)
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
 
 # BivittatusDB: Operator-Based Relational Database Management System
@@ -46,7 +46,4 @@ This project is licensed under the [MIT License](.github/LICENSE).
 This README.md file provides an overview of the operator-based relational database management system implemented in Python, detailing its current features, future plans, usage instructions, dependencies, and contribution guidelines. Additionally, it outlines the licensing information for the project.
 
 ## Known Issues: 
-1. Code must be run inside the source file in order to find the database handler code `lib_bdb.so`. [**FIXED 7/22/24**]
-2. `lib_bdb.so` does not successfully check if table already exists. (see. [BivittatusDatabase](https://github.com/HarbingerOfFire/BivitattusDatabase)) [**FIXED 7/17/24**]
-3. Example files no longer reflects new syntax. [**FIXED 7/22/24**]
-4. No data compression with the new updates (fix planned) [**FIXED 7/17/24**]
+Due to recent updates, no issues are known at this time. All example files are acting as expected. We are accepting issues if you find anything that we have missed.

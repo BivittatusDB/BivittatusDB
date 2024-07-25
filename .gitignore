@@ -10,6 +10,8 @@ todo.md
 .gitignore
 *.pydb
 
+/test/*
+
 # User-specific files
 *.rsuser
 *.suo
