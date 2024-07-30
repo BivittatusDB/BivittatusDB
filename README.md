@@ -2,7 +2,7 @@
 <img src="./logo.png" />
 </p>
 
-![Static Badge](https://img.shields.io/badge/Version-4.1.1-%20green)
+![Static Badge](https://img.shields.io/badge/Version-1.0.0.0-%20green)
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
 
 # BivittatusDB: Operator-Based Relational Database Management System
