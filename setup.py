@@ -17,7 +17,7 @@ setup(
     classifiers=[
         "Programming Language :: Python :: 3.x",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent?",
+        "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
     install_requires=["pycryptodome==3.20.0"],
