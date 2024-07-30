@@ -20,7 +20,7 @@ This is a Python-based relational database management system (RDBMS) designed fr
 ## Installation
 To install this, use the following command, as the latest commit could (and probably does) have a few errors, but the last stable release is working (as far as we know):
 ```
-git clone https://github.com/HarbingerOfFire/bivittatusDB/releases/tag/v4.1.0
+git clone https://github.com/HarbingerOfFire/bivittatusDB/releases/tag/v1.0.0.0
 ```
 
 ## Examples
