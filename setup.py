@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 # Read the contents of the README file
-with open("../../README.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open("../requirements.txt", "r") as fh:
+with open(".github/requirements.txt", "r") as fh:
     depend=[]
     for line in fh:
         depend.append(line)
