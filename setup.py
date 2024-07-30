@@ -7,7 +7,8 @@ with open("README.md", "r") as fh:
 with open(".github/requirements.txt", "r") as fh:
     depend=[]
     for line in fh:
-        depend.append(line)
+        print(line)
+        depend.append(line.strip()[3:])
 
 setup(
     name="bivittatusDB",
