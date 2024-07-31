@@ -18,9 +18,13 @@ This is a Python-based relational database management system (RDBMS) designed fr
 - **Security**: All databases are asymmetrically encrypted with a user defined password for each database.
 
 ## Installation
-To install this, use the following command, as the latest commit could (and probably does) have a few errors, but the last stable release is working (as far as we know):
+Installation is now available through pip, via the latest release. To get the latest fix (with beta features) use
+```bash
+pip install bivittatusDB
 ```
-git clone https://github.com/HarbingerOfFire/bivittatusDB/releases/tag/v1.0.0.0
+The last build is unavailable at this time. Based on the [release schedule](https://github.com/HarbingerOfFire/bivittatusDB/wiki/dbed-0001), release 2.0.0.0 should be released 08/01/2025. The closest working version of build 1.0.0.0 available on PyPi is v1.0.0.1
+```bash
+pip install bivittatusDB==1.0.0.1
 ```
 
 ## Examples
