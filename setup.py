@@ -15,7 +15,8 @@ setup(
     url="https://github.com/HarbingerOfFire/bivittatusDB",
     packages=find_packages(),
     package_data={
-        'BivittatusDB':['./*.so']
+        'BivittatusDB':['./*.so'],
+        '':["./*png"]
     },
     include_package_data=True,
     classifiers=[
