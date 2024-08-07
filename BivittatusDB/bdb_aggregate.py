@@ -31,6 +31,7 @@ def drop(database:str):
 ON=True
 OFF=False
 ALL=None
+PRIMARY=None
 
 #aggregate functions for stage 3
 def ensure_column(table):

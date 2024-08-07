@@ -32,9 +32,11 @@ tb1+(3, None)
 #Set the name change id 3 to 2
 tb2["id"] = (2, tb2["id"]==3)
 
+#plain print
+print(tb1)
+
 #refresh and print 
 print(~tb1)
-print(~tb2)
 
 #uncomment the lines below to see an example error for 
 #tb1+(1, "Python")

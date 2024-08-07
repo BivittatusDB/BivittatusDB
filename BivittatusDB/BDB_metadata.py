@@ -72,8 +72,17 @@ class table:
     
     def __setitem__(self, key, value):
         '''change column name. Will probably change later.'''
-        columns=self.columns
-        columns[key]=value
+        try:
+            value[1] == None
+            data_to_change=self.data
+        except AttributeError:
+            data_to_change=value[1].data
+        for row in self.data:
+            if row in data_to_change:
+                new_row=list(row)
+                new_row[key] = value[0]
+                self.data[self.data.index(row)] = tuple(new_row)
+        self.__save__()
 
     def __iter__(self):
         '''start iterations. Call using `for item in self`'''
@@ -132,7 +141,7 @@ class table:
         table_data=[self.columns]
         for row in rows:
             table_data.append(self.data[row])
-        return table(self.database, f"pydb_{time}", True, table_data)
+        return table(self.io, self.database, f"pydb_{time}", True, table_data)
     
     def __ne__(self, value):
         '''return table of all value meeting operand !='''

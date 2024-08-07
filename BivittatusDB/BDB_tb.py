@@ -3,6 +3,8 @@ try:
     import datetime, BDB_metadata
     from BDB_io import Handler
     from metaclass import *
+    from bdb_foreign import ForeignKey, json
+    from ast import literal_eval
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -106,6 +108,15 @@ class table(metaclass=TableMeta):
         '''Load metadata from database. Used to make checks'''
         self.meta=BDB_metadata.table(self.io, self.database, self.table_name)
         return self.meta
+    
+    def __load_refrenced__(self):
+        meta=self.__load_metadata__()
+        key=meta[1].column.pop(-1)
+        if key=="":
+            return None
+        key=json.loads(key)
+        fkey=ForeignKey(*key)
+        return fkey, table(self.io, self.database, fkey.FT)
 
     def __len__(self)->int:
         '''return the number of values in the data'''
@@ -128,6 +139,8 @@ class table(metaclass=TableMeta):
     
     def __setitem__(self, key, value):
         '''change column name. Will probably change later.'''
+        #text keys needed for update or else foreign keys don't work [PLAN FIX]
+        org_key=key
         key=self.__fix_index__(key)
         try:
             value[1] == None
@@ -139,6 +152,13 @@ class table(metaclass=TableMeta):
                 new_row=list(row)
                 new_row[key] = value[0]
                 self.data[self.data.index(row)] = tuple(new_row)
+        ref=self.__load_refrenced__()
+        if ref!=None:
+            fkey, ft=ref
+            ft@True
+            if org_key==fkey.FC:
+                ft[fkey.LC]=(value[0], ft[fkey.FC]==self.value)
+                ft.__try_commit__()
         self.__try_commit__()
 
     def __iter__(self):
@@ -176,7 +196,7 @@ class table(metaclass=TableMeta):
     def __check_type__(self, new_data: tuple)->bool:
         '''Check new rows against specified datatypes'''
         data_types=self.__load_metadata__()[1].column
-        if (len(data_types)-2) != (len(new_data)):
+        if (len(data_types)-3) != (len(new_data)):
             raise SyntaxError(f"new data doesn't match table structure")
         for i in range(len(new_data)):
             if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
@@ -185,7 +205,7 @@ class table(metaclass=TableMeta):
 
     def __check_primary__(self, new_data: tuple)->bool:
         '''ensure primary key integrity'''
-        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-2))
+        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
         if new_data[key] in self[key].column:
             raise ValueError(f"primary key {new_data[key]} is already in primary key")
         return True
@@ -197,12 +217,12 @@ class table(metaclass=TableMeta):
     def __check_foreign__(self, new_data:tuple)->bool:
         '''Ensure new data fits the foreign key constraints'''
         meta=self.__load_metadata__()
-        if meta[1].column.pop(-1) == "None":
+        if meta[1].column.pop(-2) == "None":
             return True
-        key=self.__fix_index__(meta[1].column.pop(-2))
-        other_name=self.__load_metadata__()[1].column.pop(-1)
+        key=self.__fix_index__(meta[1].column.pop(-3))
+        other_name=literal_eval(self.__load_metadata__()[1].column.pop(-2))[0]
         other=self.__load_foreign__(other_name)
-        other_key = other.__fix_index__(other.__load_metadata__()[1].column.pop(-2))
+        other_key = other.__fix_index__(other.__load_metadata__()[1].column.pop(-3))
         if new_data[key] in other[other_key]:
             return True
         else:
@@ -215,6 +235,7 @@ class table(metaclass=TableMeta):
         self.__try_commit__()
 
     def __find_compare__(self, operator:str, value):
+        self.value=value
         '''used to remove all data not meeting opperator requirments.'''
         if not self.column:
             raise BDBException.ColumunError(f"Must Index Column to use comparison {operator}")
@@ -361,10 +382,14 @@ class table(metaclass=TableMeta):
         return False
 
     def __scan_primary__(self):
-        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-2))
+        key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
         if self.contains_duplicates(self[key].column):
             raise ValueError(f"primary key is duplicated in {self.table_name}: {self.column}")
         return True
+    
+    def __invert__(self):
+        self.__init__(self.io, self.database, self.table_name,self.temp, self.data)
+        return self
 
 class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):
