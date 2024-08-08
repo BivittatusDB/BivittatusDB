@@ -21,7 +21,7 @@ tb1=test_db.New_table("table1",
                        ("id", "name"), 
                        (int(), str()), 
                        "id",
-                       "table2")
+                       ["table2", bdb.PRIMARY, bdb.PRIMARY])
 
 tb2+(3, "Cindy")
 tb1+(3, None)

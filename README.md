@@ -2,7 +2,7 @@
 <img src="./logo.png" />
 </p>
 
-[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.0.0.1")
+[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.1.0.1")
 [![Static Badge](https://img.shields.io/badge/PIP%20-%20View-blue)](https://pypi.org/project/bivittatusDB/)
 ![Static Badge](https://img.shields.io/badge/MajorBuild-1.0.0.1-%20green)
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
