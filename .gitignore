@@ -9,6 +9,9 @@ test*.py
 todo.md
 .gitignore
 *.pydb
+.venv/
+
+
 
 /test/*
 

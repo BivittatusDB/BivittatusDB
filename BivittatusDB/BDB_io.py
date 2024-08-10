@@ -10,7 +10,10 @@ except:
 
 
 try:
-    io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb.so")
+    if os.name == 'nt':
+        io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb_win32.so")
+    else:
+        io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb_elf.so")
 except:
     raise metaclass.BDBException.ImportError(f"Could not find library lib_bdb.so")
 
