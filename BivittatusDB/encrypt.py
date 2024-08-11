@@ -1,12 +1,13 @@
-import metaclass
-try: 
+from BivittatusDB import metaclass
+try:
     from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_OAEP, AES
-    from Crypto.Random import get_random_bytes, new
+    from Crypto.Random import get_random_bytes
     from Crypto.Util.Padding import pad, unpad
+    from Crypto.Protocol.KDF import PBKDF2
+    import os
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
-
 
 class RSAFileEncryptor:
     def __init__(self, database):
@@ -19,6 +20,8 @@ class RSAFileEncryptor:
         key = RSA.generate(self.key_size)
         private_key = key.export_key()
         public_key = key.publickey().export_key()
+
+        os.makedirs(os.path.dirname(self.private_key_file), exist_ok=True)
 
         with open(self.private_key_file, "wb") as priv_file:
             priv_file.write(private_key)
@@ -73,13 +76,124 @@ class RSAFileEncryptor:
         with open(input_file, "wb") as f:
             f.write(decrypted_data)
 
-# Example usage:
-if __name__ == "__main__":
-    encryptor = RSAFileEncryptor("Hello")
-    encryptor.generate_keys()
+class KeyManager:
+    def __init__(self, database_name):
+        self.database = database_name
+        self.private_key_path = os.path.join(f"./{self.database}", "private.pem")
+        self.public_key_path = os.path.join(f"./{self.database}", "public.pem")
+        self.private_key = None
+        self.public_key = None
 
-    # Encrypt the file
-    encryptor.encrypt_file("Hello/plainfile.txt")
+        # Load keys if they already exist
+        if os.path.exists(self.private_key_path) and os.path.exists(self.public_key_path):
+            self.keyload()
 
-    # Decrypt the file
-    encryptor.decrypt_file("Hello/encryptedfile.bin")
+    def key_checker(self):
+        """Generate RSA keys and store them in the database directory if they do not exist."""
+        if os.path.exists(self.private_key_path) and os.path.exists(self.public_key_path):
+            print("Keys already exist. Skipping key generation.")
+            return
+
+        key = RSA.generate(4096)
+        private_key = key.export_key()
+        public_key = key.publickey().export_key()
+        os.makedirs(os.path.dirname(self.private_key_path), exist_ok=True)
+        
+        with open(self.public_key_path, "wb") as f:
+            f.write(public_key)
+        with open(self.private_key_path, "wb") as f:
+            f.write(private_key)
+        print("Keys generated and saved.")
+
+    def keyload(self):
+        """Load RSA keys from the database directory."""
+        if not os.path.exists(self.private_key_path) or not os.path.exists(self.public_key_path):
+            raise FileNotFoundError("Key files do not exist. Please generate keys first.")
+        
+        with open(self.private_key_path, "rb") as f:
+            self.private_key = RSA.import_key(f.read())
+        with open(self.public_key_path, "rb") as f:
+            self.public_key = RSA.import_key(f.read())
+
+    @staticmethod
+    def pad(s, block_size):
+        """Pad the input bytes to be a multiple of block_size."""
+        padding_len = block_size - len(s) % block_size
+        return s + bytes([padding_len]) * padding_len
+
+    @staticmethod
+    def unpad(s):
+        """Remove padding from the input bytes."""
+        padding_len = s[-1]
+        return s[:-padding_len]
+
+class Encryption_manager:
+    def __init__(self, database, encrypted=False):
+        self.database = database
+        self.encrypted = encrypted
+        self.key_manager = KeyManager(database)
+
+    def init(self):
+        """Initialize the database, generate keys, and secure the private key if encryption is enabled."""
+        # Example implementation for creating the database handle
+        # self.CHANDLE.CreateDatabase(self.database.encode())
+        print("info: Generating keys...")
+        self.key_manager.key_checker()
+        if self.encrypted:
+            self.secure("password")  # Use an appropriate password
+        return self
+
+    def use(self):
+        """Prepare the database for use by removing security if encryption is enabled."""
+        if self.encrypted:
+            self.remove_secure("password")  # Use an appropriate password
+        return self
+
+    def derive_key(self, password, salt, key_len=32):
+        """Derive a cryptographic key from a password using PBKDF2."""
+        return PBKDF2(password, salt, dkLen=key_len, count=1000000)
+
+    def secure(self, password):
+        """Encrypt the private key with a password."""
+        if not self.key_manager.private_key:
+            raise RuntimeError("Private key not loaded. Cannot encrypt.")
+
+        try:
+            with open(self.key_manager.private_key_path, "rb") as f:
+                key = f.read()
+            
+            salt = get_random_bytes(16)
+            derived_key = self.derive_key(password, salt)
+            iv = get_random_bytes(16)
+            cipher = AES.new(derived_key, AES.MODE_CBC, iv)
+            padded_key = self.key_manager.pad(key, AES.block_size)
+            ciphertext = iv + salt + cipher.encrypt(padded_key)
+            
+            with open(self.key_manager.private_key_path, "wb") as f:
+                f.write(ciphertext)
+            print("Private key encrypted.")
+        except Exception as e:
+            raise RuntimeError(f"Problem encrypting data: {e}")
+
+    def remove_secure(self, password):
+        """Decrypt the private key with a password."""
+        if not os.path.exists(self.key_manager.private_key_path):
+            raise FileNotFoundError("Encrypted private key file does not exist.")
+        
+        try:
+            with open(self.key_manager.private_key_path, "rb") as f:
+                iv = f.read(16)
+                salt = f.read(16)
+                encrypted_key = f.read()
+            
+            derived_key = self.derive_key(password, salt)
+            cipher = AES.new(derived_key, AES.MODE_CBC, iv)
+            decrypted_key = self.key_manager.unpad(cipher.decrypt(encrypted_key))
+            
+            with open(self.key_manager.private_key_path, "wb") as f:
+                f.write(decrypted_key)
+            
+            self.key_manager.private_key = RSA.import_key(decrypted_key)
+            print("Private key decrypted and loaded.")
+        except Exception as e:
+            raise RuntimeError(f"Problem decrypting data: {e}")

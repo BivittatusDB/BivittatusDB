@@ -1,14 +1,19 @@
+from encrypt import KeyManager
 import metaclass
-try: 
-    from encrypt import *
-    import ctypes, os, getpass
-    from json import dumps, loads
-    from gzip import compress, decompress
-    from binascii import hexlify, unhexlify
-except:
+import ctypes
+import os
+import getpass
+from json import dumps, loads
+from gzip import compress, decompress
+from binascii import hexlify, unhexlify
+
+# Import encryption-related functionalities
+try:
+    from encrypt import RSAFileEncryptor
+except ImportError:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
-
+# Load the shared library
 try:
     if os.name == 'nt':
         io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb_win32.so")
@@ -17,196 +22,168 @@ try:
 except:
     raise metaclass.BDBException.ImportError(f"Could not find library lib_bdb.so")
 
+# _CHANDLE class definition
 class _CHANDLE:
-    def __init__(self) -> None:
+    def __init__(self):
         pass
 
+    def _call_lib_function(self, func_name, *args, restype=None):
+        func = getattr(io_lib, func_name)
+        argtypes = []
+        for arg in args:
+            if isinstance(arg, bytes):
+                argtypes.append(ctypes.c_char_p)
+            elif isinstance(arg, int):
+                argtypes.append(ctypes.c_int)
+            else:
+                raise TypeError(f"Unsupported argument type: {type(arg)}")
+        func.argtypes = argtypes
+        if restype:
+            func.restype = restype
+        return func(*args)
+
     def CreateDatabase(self, databasename: bytes):
-        io_lib.CreateDatabase.argtypes = [ctypes.c_char_p]
-        io_lib.CreateDatabase(databasename)
-    
-    def CreateTable(self, databasename:bytes, tablename:bytes, data:bytes):
-        io_lib.CreateTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ]
-        io_lib.CreateTable(databasename, tablename, data)
+        self._call_lib_function('CreateDatabase', databasename)
 
-    def AddMetaData(self, databasename:bytes, tablename:bytes, metadata:bytes):
-        io_lib.AddMetaData.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-        io_lib.AddMetaData(databasename, tablename, metadata)
+    def CreateTable(self, databasename: bytes, tablename: bytes, data: bytes):
+        self._call_lib_function('CreateTable', databasename, tablename, data)
 
-    def ReadTable(self, database:bytes, tablename:bytes, Metadata:bool):
-        io_lib.ReadTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-        io_lib.ReadTable.restype = ctypes.c_char_p
-        return io_lib.ReadTable(database, tablename, Metadata)
-    
-    def DeleteTable(self, database:bytes, tablename:bytes):
-        io_lib.DeleteTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        io_lib.DeleteTable(database, tablename)
+    def AddMetaData(self, databasename: bytes, tablename: bytes, metadata: bytes):
+        self._call_lib_function('AddMetaData', databasename, tablename, metadata)
 
-    def UpdateTable(self, database:bytes, tablename:bytes, data:bytes):
-        io_lib.UpdateTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-        io_lib.UpdateTable(database, tablename, data)
+    def ReadTable(self, database: bytes, tablename: bytes, metadata: int):
+        result = self._call_lib_function('ReadTable', database, tablename, metadata, restype=ctypes.c_char_p)
+        return result
 
-    def UpdateMetaTable(self, database:bytes, tablename:bytes, metadata:bytes):
-        io_lib.UpdateMetaTable.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-        io_lib.UpdateMetaTable(database, tablename, metadata)
+    def DeleteTable(self, database: bytes, tablename: bytes):
+        self._call_lib_function('DeleteTable', database, tablename)
 
-    def CheckDataSet(self, database:bytes, tablename:bytes):
-        io_lib.CheckDataSet.argtypes = [ctypes.c_char_p]
-        io_lib.CheckDataSet.restype=ctypes.c_int
-        return bool(io_lib.CheckDataSet(f"./{database.decode()}/{tablename.decode()}".encode()))
+    def UpdateTable(self, database: bytes, tablename: bytes, data: bytes):
+        self._call_lib_function('UpdateTable', database, tablename, data)
 
+    def UpdateMetaTable(self, database: bytes, tablename: bytes, metadata: bytes):
+        self._call_lib_function('UpdateMetaTable', database, tablename, metadata)
+
+    def CheckDataSet(self, database: bytes, tablename: bytes) -> bool:
+        result = self._call_lib_function('CheckDataSet', f"./{database.decode()}/{tablename.decode()}".encode(), restype=ctypes.c_int)
+        return bool(result)
+
+# Main Handler class
 class Handler:
-    def __init__(self, database_name:str, Encrypted:bool=False) -> None:
-        self.CHANDLE=_CHANDLE()
-        self.encryptor=RSAFileEncryptor(database_name)
-        self.database=database_name
-        self.enc=Encrypted
-        self.ext=".pydb"
+    def __init__(self, database_name: str, encrypted: bool = False) -> None:
+        self.CHANDLE = _CHANDLE()
+        self.encryptor = RSAFileEncryptor(database_name)
+        self.key_manager = KeyManager(database_name)
+        self.database = database_name
+        self.encrypted = encrypted
+        self.ext = ".pydb"
 
     def init(self):
+        """Initialize the database, generate keys, and secure the private key if encryption is enabled."""
         self.CHANDLE.CreateDatabase(self.database.encode())
-        print("Generating...")
-        self.keygen()
-        if self.enc:
+        print("info: Generating keys...")
+        self.key_manager.key_checker()
+        if self.encrypted:
             self.secure()
         return self
 
     def use(self):
-        if self.enc:
+        """Prepare the database for use by removing security if encryption is enabled."""
+        if self.encrypted:
             self.remove_secure()
         return self
-    
-    def keygen(self):
-        key=RSA.generate(4096)
-        private_key=key.export_key()
-        public_key=key.publickey().export_key()
-        with open(f"./{self.database}/public.pem", "wb") as f:
-            f.write(public_key)
-        with open(f"./{self.database}/private.pem", "wb") as f:
-            f.write(private_key)
-
-    def keyload(self):
-        with open(f"./{self.database}/private.pem", "rb") as f:
-            self.private_key =RSA.import_key(f.read())
-        with open(f"./{self.database}/public.pem", "rb") as f:
-            self.public_key=RSA.import_key(f.read())
-
-    def pad(self, s, block_size):
-        padding_len = block_size - len(s) % block_size
-        return s + bytes([padding_len]) * padding_len
-    
-    def unpad(self, s):
-        padding_len=s[-1]
-        return s[:-padding_len]
 
     def secure(self):
-        try:
-            try:
-                self.password
-            except:
-                self.password=getpass.getpass(f"Enter password for {self.database}: ")
-            with open(f"./{self.database}/private.pem", "rb") as f:
-                key=f.read()
-            key=self.pad(key, 256)
-            password=self.pad(self.password.encode(), 32)
-            iv=new().read(16)
-            cipher=AES.new(password, AES.MODE_CBC, iv)
-            ciphertext=hexlify(iv+cipher.encrypt(key))
-            with open(f"./{self.database}/private.pem", "wb") as f:
-                f.write(ciphertext)
-        except:
-            raise metaclass.BDBException.EncryptionError("Problem encrypting data")
+        """Secure the private key with a password."""
+        password = getpass.getpass(f"Enter password for {self.database}: ")
+        self.key_manager.secure(password)
 
     def remove_secure(self):
-        try:
-            try:
-                self.password
-            except:
-                self.password=getpass.getpass(f"Enter password for {self.database}: ")
-            with open(f"./{self.database}/private.pem", "rb") as f:
-                key=unhexlify(f.read())
-            password=self.pad(self.password.encode(), 32)
-            block=AES.block_size
-            iv = key[:block]
-            cipher=AES.new(password, AES.MODE_CBC, iv)
-            key=self.unpad(cipher.decrypt(key[block:]))
-            with open(f"./{self.database}/private.pem", "w") as f:
-                f.write(key.decode())
-        except:
-            raise metaclass.BDBException.EncryptionError("Problem Decrypting data")
+        """Remove security from the private key with a password."""
+        password = getpass.getpass(f"Enter password for {self.database}: ")
+        self.key_manager.remove_secure(password)
 
-    def CreateTable(self, tablename:str, data:list, metadata:list):
+    def CreateTable(self, tablename: str, data: list, metadata: list):
+        """Create a table with the given name, data, and metadata."""
         try:
-            data=hexlify(compress(dumps(data).encode()))
-            metadata=hexlify(compress(dumps(metadata).encode()))
-            self.CHANDLE.CreateTable(self.database.encode(), (tablename+self.ext).encode(), data)
-            self.CHANDLE.AddMetaData(self.database.encode(), (tablename+self.ext).encode(), metadata)
+            data = hexlify(compress(dumps(data).encode()))
+            metadata = hexlify(compress(dumps(metadata).encode()))
+            table_name = (tablename + self.ext).encode()
+            self.CHANDLE.CreateTable(self.database.encode(), table_name, data)
+            self.CHANDLE.AddMetaData(self.database.encode(), table_name, metadata)
             self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
-        except:
-            raise metaclass.BDBException.CreationError(f"Problem Creating table {tablename}")
+        except Exception as e:
+            raise metaclass.BDBException.CreationError(f"Problem creating table {tablename}: {e}")
 
-    def DeleteTable(self, tablename:str):
+    def DeleteTable(self, tablename: str):
+        """Delete the table with the given name."""
         try:
-            self.CHANDLE.DeleteTable(self.database.encode(), (tablename+self.ext).encode())
-        except:
-            raise metaclass.BDBException.DeletionError(f"Problem deleting table {tablename}")
+            self.CHANDLE.DeleteTable(self.database.encode(), (tablename + self.ext).encode())
+        except Exception as e:
+            raise metaclass.BDBException.DeletionError(f"Problem deleting table {tablename}: {e}")
 
-    def UpdateTable(self, tablename:str, data:list):
+    def UpdateTable(self, tablename: str, data: list):
+        """Update the table with the given name with new data."""
         try:
             self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-            data=hexlify(compress(dumps(data).encode()))
-            self.CHANDLE.UpdateTable(self.database.encode(),(tablename+self.ext).encode(), data)
+            data = hexlify(compress(dumps(data).encode()))
+            self.CHANDLE.UpdateTable(self.database.encode(), (tablename + self.ext).encode(), data)
             self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
-        except:
-            raise metaclass.BDBException.EditError(f"Error Updating file {tablename}")
+        except Exception as e:
+            raise metaclass.BDBException.EditError(f"Error updating table {tablename}: {e}")
 
-    def UpdateMetaTable(self, tablename:str, metadata:list):
+    def UpdateMetaTable(self, tablename: str, metadata: list):
+        """Update the metadata of the table with the given name."""
         try:
             self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-            metadata=hexlify(compress(dumps(metadata).encode()))
-            self.CHANDLE.UpdateMetaTable(self.database.encode(),(tablename+self.ext).encode(), metadata)
+            metadata = hexlify(compress(dumps(metadata).encode()))
+            self.CHANDLE.UpdateMetaTable(self.database.encode(), (tablename + self.ext).encode(), metadata)
             self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
-        except:
-            raise metaclass.BDBException.EditError(f"Error updating metadata for file {tablename}")
+        except Exception as e:
+            raise metaclass.BDBException.EditError(f"Error updating metadata for table {tablename}: {e}")
 
-    def ReadTable(self, tablename:str):
+    def ReadTable(self, tablename: str):
+        """Read the data from the table with the given name."""
         try:
             self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-            data=self.CHANDLE.ReadTable(self.database.encode(), (tablename+self.ext).encode(), False)
-            data=loads(decompress(unhexlify(data)).decode())
+            data = self.CHANDLE.ReadTable(self.database.encode(), (tablename + self.ext).encode(), int(False))
+            data = loads(decompress(unhexlify(data)).decode())
             self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
             return data
-        except:
-            raise metaclass.BDBException.ReadError(f"Error Reading data from {tablename}")
-    
-    def ReadMetadata(self, tablename:str):
+        except Exception as e:
+            raise metaclass.BDBException.ReadError(f"Error reading data from table {tablename}: {e}")
+
+    def ReadMetadata(self, tablename: str):
+        """Read the metadata from the table with the given name."""
         try:
             self.encryptor.decrypt_file(f"./{self.database}/{tablename}.pydb")
-            data=self.CHANDLE.ReadTable(self.database.encode(), (tablename+self.ext).encode(), True)
-            data=loads(decompress(unhexlify(data)).decode())
+            metadata = self.CHANDLE.ReadTable(self.database.encode(), (tablename + self.ext).encode(), int(True))
+            metadata = loads(decompress(unhexlify(metadata)).decode())
             self.encryptor.encrypt_file(f"./{self.database}/{tablename}.pydb")
-            return data
-        except:
-            raise metaclass.BDBException.ReadError(f"Error reading metadata from {tablename}")
-    
-    def TableExists(self, tablename:str):
-        return self.CHANDLE.CheckDataSet(self.database.encode(), (tablename+self.ext).encode())
+            return metadata
+        except Exception as e:
+            raise metaclass.BDBException.ReadError(f"Error reading metadata from table {tablename}: {e}")
 
-if __name__=="__main__":
-    hand=Handler("Hello", True).init().use()
-    hand.CreateTable("Test", ["Hello World"], [None])
-    print("Test table1 exists: {}".format(hand.TableExists("Test")))
+    def TableExists(self, tablename: str) -> bool:
+        """Check if the table with the given name exists in the database."""
+        return self.CHANDLE.CheckDataSet(self.database.encode(), (tablename + self.ext).encode())
 
-    hand.CreateTable("hello_world", ["check"], ["working..."])
-    print("Test table2 exists: {}".format(hand.TableExists("hello_world")))
-    data=hand.ReadTable("hello_world")
-    metadata=hand.ReadMetadata("hello_world")
-    print("{}: {}".format(data[0], metadata[0]))
+# Example usage
+if __name__ == "__main__":
+    handler = Handler("Hello", True).init().use()
+    handler.CreateTable("Test", ["Hello World"], [None])
+    print(f"Test table1 exists: {handler.TableExists('Test')}")
 
-    hand.DeleteTable("Test")
-    print("Test table1 deleted: {}".format(not hand.TableExists("Test")))
+    handler.CreateTable("hello_world", ["check"], ["working..."])
+    print(f"Test table2 exists: {handler.TableExists('hello_world')}")
+    data = handler.ReadTable("hello_world")
+    metadata = handler.ReadMetadata("hello_world")
+    print(f"{data[0]}: {metadata[0]}")
 
-    hand.UpdateTable("hello_world", ["new check"])
-    data=hand.ReadTable("hello_world")
-    metadata=hand.ReadMetadata("hello_world")
-    print("{}: {}".format(data[0], metadata[0]))
+    handler.DeleteTable("Test")
+    print(f"Test table1 deleted: {not handler.TableExists('Test')}")
+
+    handler.UpdateTable("hello_world", ["new check"])
+    data = handler.ReadTable("hello_world")
+    metadata = handler.ReadMetadata("hello_world")
+    print(f"{data[0]}: {metadata[0]}")
