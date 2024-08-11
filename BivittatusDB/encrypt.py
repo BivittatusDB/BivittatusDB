@@ -137,7 +137,7 @@ class Encryption_manager:
         """Initialize the database, generate keys, and secure the private key if encryption is enabled."""
         # Example implementation for creating the database handle
         # self.CHANDLE.CreateDatabase(self.database.encode())
-        print("info: Generating keys...")
+        print("info: Generating keys...", end='')
         self.key_manager.key_checker()
         if self.encrypted:
             self.secure("password")  # Use an appropriate password
