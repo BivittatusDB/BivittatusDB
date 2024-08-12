@@ -1,6 +1,8 @@
 import metaclass
+from traceback import print_exc as trace
 try:     
     import datetime, BDB_metadata
+    from bdb_aggregate import infomessage
     from encrypt import KeyManager
     from metaclass import *
     from bdb_foreign import ForeignKey, json
@@ -8,8 +10,10 @@ try:
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
+class table(metaclass=TableMeta): ...
+
 class table(metaclass=TableMeta):
-    def __init__(self, handler:KeyManager, database, table_name, temp:bool=False, temp_data:list=None) -> None:
+    def __init__(self, handler:KeyManager, database, table_name, temp:bool=False, temp_data:list=None) -> table:
         self.io=handler
         self.autocommit=False
         self.database=database
@@ -42,6 +46,7 @@ class table(metaclass=TableMeta):
             self.data=self.io.ReadTable(self.table_name)
             self.columns=self.data.pop(0)
         except:
+            infomessage(trace())
             raise BDBException.ReadError(f"Courld not read table {self.table_name}")
 
     def __edit__(self):
@@ -50,6 +55,7 @@ class table(metaclass=TableMeta):
             data=[self.columns]+self.data
             self.io.UpdateTable(self.table_name, data)
         except:
+            infomessage(trace())
             raise BDBException.EditError(f"Could not update table {self.table_name}")
 
     def __make__(self):
@@ -60,6 +66,7 @@ class table(metaclass=TableMeta):
             self.io.CreateTable(self.table_name, [self.columns], metadata)
             return table(self.io, self.database, self.table_name)
         except:
+            infomessage(trace())
             raise BDBException.CreationError(f"Could not create table {self.table_name}")
 
     def __save__(self, name=None, types=None):
@@ -73,8 +80,9 @@ class table(metaclass=TableMeta):
                 new.data=self.data
                 new.__save__()
                 return new
-        except Exception as e:
-            return f"Error saving database: {e}"
+        except Exception:
+            infomessage(trace())
+            return f"Error saving database"
         
         '''Commit changes to database. Call using save function in main file'''
         if name==None or name==self.table_name:
@@ -102,6 +110,7 @@ class table(metaclass=TableMeta):
             table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
             return table
         except Exception as e:
+            infomessage(trace())
             return f"Error generating the string representation of the table: {e}"
  
     def __load_metadata__(self):
@@ -122,13 +131,13 @@ class table(metaclass=TableMeta):
         '''return the number of values in the data'''
         return len(self.data)
     
-    def __fix_index__(self, key)->int:
+    def __fix_index__(self, key: int | str)->int:
         '''turns a str index into a int for proper management'''
         if type(key)==type(str()):
             return self.columns.index(key)
         return key
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: int | str):
         '''return a column from the data. Requirement to compare data'''
         self.column=[]
         data=self.data
@@ -137,7 +146,7 @@ class table(metaclass=TableMeta):
             self.column.append(row[self.key])
         return self
     
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int | str, value: any):
         '''change column name. Will probably change later.'''
         #text keys needed for update or else foreign keys don't work [PLAN FIX]
         org_key=key
@@ -161,8 +170,14 @@ class table(metaclass=TableMeta):
                 ft.__try_commit__()
         self.__try_commit__()
 
+    def __empty_check__(self):
+        if len(self) == 0:
+            infomessage(trace())
+            raise metaclass.BDBException.EmptyTableError(f"Can't use emptpy table {self.table_name}")
+
     def __iter__(self):
         '''start iterations. Call using `for item in self`'''
+        self.__empty_check__()
         self.index=0
         return self
     
@@ -176,9 +191,11 @@ class table(metaclass=TableMeta):
         else:
             raise StopIteration
         
-    def __contains__(self, item):
+    def __contains__(self, item: any):
         '''checks to see if item is in data. Call using `item in self`'''
+        self.__empty_check__()
         if not self.column and self.data:
+            infomessage(trace())
             raise BDBException.ColumunError("Must index a column to search item")
         if item in self.column:
             del self.column
@@ -186,8 +203,9 @@ class table(metaclass=TableMeta):
         del self.column
         return False
     
-    def __mul__(self, key):
+    def __mul__(self, key: int | str):
         '''sort a the data by specified column (key). call using self*key (0 indexed)'''
+        self.__empty_check__()
         key=self.__fix_index__(key)
         self.data=sorted(self.data, key=lambda x: x[key])
         self.__try_commit__()
@@ -197,20 +215,23 @@ class table(metaclass=TableMeta):
         '''Check new rows against specified datatypes'''
         data_types=self.__load_metadata__()[1].column
         if (len(data_types)-3) != (len(new_data)):
-            raise SyntaxError(f"new data doesn't match table structure")
+            infomessage(trace())
+            raise metaclass.BDBException.StructureError(f"new data doesn't match table structure")
         for i in range(len(new_data)):
             if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
-                raise SyntaxError(f"New data does not match defined datatypes.")
+                infomessage(trace())
+                raise metaclass.BDBException.TypeError(f"New data does not match defined datatypes.")
         return True
 
     def __check_primary__(self, new_data: tuple)->bool:
         '''ensure primary key integrity'''
         key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
         if new_data[key] in self[key].column:
-            raise ValueError(f"primary key {new_data[key]} is already in primary key")
+            infomessage(trace())
+            raise metaclass.BDBException.KeyError(f"primary key {new_data[key]} is already in primary key")
         return True
     
-    def __load_foreign__(self, other):
+    def __load_foreign__(self, other: str):
         other=table(self.io, self.database, other)
         return other
 
@@ -226,9 +247,10 @@ class table(metaclass=TableMeta):
         if new_data[key] in other[other_key]:
             return True
         else:
-            raise ReferenceError(f"Value {new_data[key]} not found in {other_name}")
+            infomessage(trace())
+            raise metaclass.BDBException.RefError(f"Value {new_data[key]} not found in {other_name}")
 
-    def __add__(self, value:list):
+    def __add__(self, value:tuple)->None:
         '''add new row to the table. call using self+value'''
         if self.__check_type__(value) and self.__check_primary__(value) and self.__check_foreign__(value):
             self.data.append(value)
@@ -237,7 +259,9 @@ class table(metaclass=TableMeta):
     def __find_compare__(self, operator:str, value):
         self.value=value
         '''used to remove all data not meeting opperator requirments.'''
+        self.__empty_check__()
         if not self.column:
+            infomessage(trace())
             raise BDBException.ColumunError(f"Must Index Column to use comparison {operator}")
         data=self.column
         rows=[]
@@ -246,7 +270,7 @@ class table(metaclass=TableMeta):
                 rows.append(i)
         return rows
     
-    def __sub__(self, value):
+    def __sub__(self, value: any):
         '''remove all rows containing value in specified column'''
         rows=self.__find_compare__("==", value)
         for i in rows:
@@ -309,6 +333,7 @@ class table(metaclass=TableMeta):
     
     def __lshift__(self, other):
         '''left join tables. call using table1<<table2'''
+        self.__empty_check__()
         time=datetime.datetime.now()
         left_table=self.__conv_list_dict__()
         left_cols =self.columns
@@ -329,6 +354,7 @@ class table(metaclass=TableMeta):
 
     def __rshift__(self, other):
         '''right join tables. Call using table1>>table2'''
+        self.__empty_check__()
         time=datetime.datetime.now()
         left_table=self.__conv_list_dict__()
         left_cols =self.columns
@@ -350,6 +376,7 @@ class table(metaclass=TableMeta):
 
     def __xor__(self, other):
         '''full join tables. Call using table1^table2'''
+        self.__empty_check__()
         time=datetime.datetime.now()
         ljoin = (self << other).__conv_list_dict__()
         rjoin = (self >> other).__conv_list_dict__()
@@ -384,7 +411,8 @@ class table(metaclass=TableMeta):
     def __scan_primary__(self):
         key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
         if self.contains_duplicates(self[key].column):
-            raise ValueError(f"primary key is duplicated in {self.table_name}: {self.column}")
+            infomessage(trace())
+            raise metaclass.BDBException.KeyError(f"primary key is duplicated in {self.table_name}: {self.column}")
         return True
     
     def __invert__(self):
@@ -393,17 +421,26 @@ class table(metaclass=TableMeta):
 
 class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):
-        data=[other.columns] + other.data
-        rollback=table(other.io, other.database, "rollback"+other.table_name, True, data)
-        other.rollback = rollback
+        try:
+            data=[other.columns] + other.data
+            rollback=table(other.io, other.database, "rollback"+other.table_name, True, data)
+            other.rollback = rollback
+        except:
+            infomessage(trace())
+            raise metaclass.BDBException.TransactionError(f"Error creating savepoint for {other.table_name}")
 
 class ROLLBACK(metaclass=RollbackMeta):
     def __matmul__(self, other:table):
         if not other.rollback:
-            raise AttributeError("Cannot rollback a table with no savepoint")
-        data=other.rollback.data
-        del other.rollback.data
-        other.data=data
+            infomessage(trace())
+            raise metaclass.BDBException.TransactionError(f"Table {other.table_name} doesn't have a savepoint")
+        try:
+            data=other.rollback.data
+            del other.rollback.data
+            other.data=data
+        except:
+            infomessage(trace())
+            raise metaclass.BDBException.TransactionError(f"Error Rolling back table {other.table_name}")
 
 class COMMIT(metaclass=CommitMeta):
     def __matmul__(self, other:table):

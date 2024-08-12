@@ -32,6 +32,12 @@ ON=True
 OFF=False
 ALL=None
 PRIMARY=None
+VERBOSE=ON
+
+class infomessage():
+    def __init__(self, message: str, **print_kwargs) -> None:
+        if VERBOSE:
+            print(message, **print_kwargs)
 
 #aggregate functions for stage 3
 def ensure_column(table):

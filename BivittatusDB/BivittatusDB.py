@@ -31,7 +31,7 @@ class database:
         '''Make a new table and specify the name, columns and data types. Optionally assign primary key. Returns the table'''
         if primary not in columns:
             while primary != None:
-                raise NameError(f"Can't make unknown column {primary} into a primary key")
+                raise metaclass.BDBException.KeyError(f"Can't make unknown column {primary} into a primary key")
         metadata=[("Data", "Type")]
         for column, value in zip(columns, data_types):
             metadata.append((column, value))

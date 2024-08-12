@@ -1,4 +1,5 @@
 from encrypt import KeyManager
+from BivittatusDB.bdb_aggregate import infomessage
 import metaclass
 import ctypes
 import os
@@ -81,7 +82,7 @@ class Handler:
     def init(self):
         """Initialize the database, generate keys, and secure the private key if encryption is enabled."""
         self.CHANDLE.CreateDatabase(self.database.encode())
-        print("info: Generating keys...")
+        infomessage("info: Generating keys...", end='')
         self.key_manager.key_checker()
         if self.encrypted:
             self.secure()

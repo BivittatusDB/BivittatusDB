@@ -40,3 +40,9 @@ class BDBException:
     class EncryptionError(Exception): ... # for problems with encryption/decryption
     class AggregateError(Exception): ... #for problems using aggregate functions
     class ColumunError(Exception): ... #for when column is not specified for dependant functions
+    class EmptyTableError(Exception): ... #for when you try to loop through or get data from an empty table
+    class StructureError(Exception): ... #Used in checks when structure doesn't match metadata
+    class TypeError(Exception): ... #Used in checks when data types don't match metadata
+    class KeyError(Exception): ... #Used when there is a problem with foreign or primary keys
+    class RefError(Exception): ... #Used when refrenced table is not found
+    class TransactionError(Exception): ... #Used for transaction management

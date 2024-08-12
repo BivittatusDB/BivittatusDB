@@ -1,5 +1,6 @@
-from BivittatusDB import metaclass
+import metaclass
 try:
+    from bdb_aggregate import infomessage
     from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_OAEP, AES
     from Crypto.Random import get_random_bytes
@@ -91,7 +92,7 @@ class KeyManager:
     def key_checker(self):
         """Generate RSA keys and store them in the database directory if they do not exist."""
         if os.path.exists(self.private_key_path) and os.path.exists(self.public_key_path):
-            print("Keys already exist. Skipping key generation.")
+            infomessage("Keys already exist. Skipping key generation.")
             return
 
         key = RSA.generate(4096)
@@ -103,7 +104,7 @@ class KeyManager:
             f.write(public_key)
         with open(self.private_key_path, "wb") as f:
             f.write(private_key)
-        print("Keys generated and saved.")
+        infomessage("Keys generated and saved.")
 
     def keyload(self):
         """Load RSA keys from the database directory."""
@@ -137,7 +138,7 @@ class Encryption_manager:
         """Initialize the database, generate keys, and secure the private key if encryption is enabled."""
         # Example implementation for creating the database handle
         # self.CHANDLE.CreateDatabase(self.database.encode())
-        print("info: Generating keys...", end='')
+        infomessage("info: Generating keys...", end='')
         self.key_manager.key_checker()
         if self.encrypted:
             self.secure("password")  # Use an appropriate password
@@ -171,7 +172,7 @@ class Encryption_manager:
             
             with open(self.key_manager.private_key_path, "wb") as f:
                 f.write(ciphertext)
-            print("Private key encrypted.")
+            infomessage("Private key encrypted.")
         except Exception as e:
             raise RuntimeError(f"Problem encrypting data: {e}")
 
@@ -194,6 +195,6 @@ class Encryption_manager:
                 f.write(decrypted_key)
             
             self.key_manager.private_key = RSA.import_key(decrypted_key)
-            print("Private key decrypted and loaded.")
+            infomessage("Private key decrypted and loaded.")
         except Exception as e:
             raise RuntimeError(f"Problem decrypting data: {e}")
