@@ -1,5 +1,5 @@
 from encrypt import KeyManager
-from BivittatusDB.bdb_aggregate import infomessage
+from bdb_aggregate import infomessage
 import metaclass
 import ctypes
 import os
@@ -15,13 +15,15 @@ except ImportError:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
 # Load the shared library
-try:
-    if os.name == 'nt':
-        io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb_win32.so")
-    else:
-        io_lib = ctypes.CDLL(f"{os.path.dirname(os.path.abspath(__file__))}/lib_bdb_elf.so")
-except:
-    raise metaclass.BDBException.ImportError(f"Could not find library lib_bdb.so")
+def load_shared_library():
+    library_name = 'lib_bdb_win32.so' if os.name == 'nt' else 'lib_bdb_elf.so'
+    library_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), library_name)
+    try:
+        return ctypes.CDLL(library_path)
+    except OSError as e:
+        raise metaclass.BDBException.ImportError(f"Could not load shared library {library_path}: {e}")
+
+io_lib = load_shared_library()
 
 # _CHANDLE class definition
 class _CHANDLE:
@@ -29,7 +31,10 @@ class _CHANDLE:
         pass
 
     def _call_lib_function(self, func_name, *args, restype=None):
-        func = getattr(io_lib, func_name)
+        func = getattr(io_lib, func_name, None)
+        if func is None:
+            raise AttributeError(f"Function {func_name} not found in shared library")
+        
         argtypes = []
         for arg in args:
             if isinstance(arg, bytes):
@@ -96,13 +101,22 @@ class Handler:
 
     def secure(self):
         """Secure the private key with a password."""
-        password = getpass.getpass(f"Enter password for {self.database}: ")
+        password = self._get_password("Enter password to secure the private key: ")
         self.key_manager.secure(password)
 
     def remove_secure(self):
         """Remove security from the private key with a password."""
-        password = getpass.getpass(f"Enter password for {self.database}: ")
+        password = self._get_password("Enter password to remove security from the private key: ")
         self.key_manager.remove_secure(password)
+
+    def _get_password(self, prompt: str) -> str:
+        """Prompt the user for a password with hidden input."""
+        while True:
+            password = getpass.getpass(prompt)
+            if password:
+                return password
+            else:
+                infomessage("Password cannot be empty. Please try again.", end='')
 
     def CreateTable(self, tablename: str, data: list, metadata: list):
         """Create a table with the given name, data, and metadata."""
@@ -172,19 +186,25 @@ class Handler:
 # Example usage
 if __name__ == "__main__":
     handler = Handler("Hello", True).init().use()
-    handler.CreateTable("Test", ["Hello World"], [None])
-    print(f"Test table1 exists: {handler.TableExists('Test')}")
+    
+    try:
+        handler.CreateTable("Test", ["Hello World"], [None])
+        print(f"Test table1 exists: {handler.TableExists('Test')}")
 
-    handler.CreateTable("hello_world", ["check"], ["working..."])
-    print(f"Test table2 exists: {handler.TableExists('hello_world')}")
-    data = handler.ReadTable("hello_world")
-    metadata = handler.ReadMetadata("hello_world")
-    print(f"{data[0]}: {metadata[0]}")
+        handler.CreateTable("hello_world", ["check"], ["working..."])
+        print(f"Test table2 exists: {handler.TableExists('hello_world')}")
+        
+        data = handler.ReadTable("hello_world")
+        metadata = handler.ReadMetadata("hello_world")
+        print(f"{data[0]}: {metadata[0]}")
 
-    handler.DeleteTable("Test")
-    print(f"Test table1 deleted: {not handler.TableExists('Test')}")
+        handler.DeleteTable("Test")
+        print(f"Test table1 deleted: {not handler.TableExists('Test')}")
 
-    handler.UpdateTable("hello_world", ["new check"])
-    data = handler.ReadTable("hello_world")
-    metadata = handler.ReadMetadata("hello_world")
-    print(f"{data[0]}: {metadata[0]}")
+        handler.UpdateTable("hello_world", ["new check"])
+        data = handler.ReadTable("hello_world")
+        metadata = handler.ReadMetadata("hello_world")
+        print(f"{data[0]}: {metadata[0]}")
+    
+    except metaclass.BDBException as e:
+        infomessage(f"Database operation error: {e}")
