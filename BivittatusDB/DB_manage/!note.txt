@@ -1,0 +1,7 @@
+The contents of this folder include modules that were originally provided as examples.
+These examples have now been adapted and refined for practical, real-world use.
+The adjustments made aim to enhance their applicability and effectiveness in actual scenarios.
+
+Please note that some of these modules are currently in beta and may not be fully functional at this time.
+
+@ScriptSlayer0
