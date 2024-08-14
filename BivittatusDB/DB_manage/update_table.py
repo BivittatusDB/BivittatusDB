@@ -1,6 +1,6 @@
 import os
 import BivittatusDB as bdb
-from utils.clean_screan import pause_and_clean
+from bdb_aggregate import pause_and_clean
 
 # Initialize the database
 def update_tb():

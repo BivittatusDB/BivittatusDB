@@ -1,6 +1,6 @@
+from bdb_aggregate import pause_and_clean
 from DB_manage.adding_rows import add_names_to_db
 from DB_manage.table_view import use_table
-from utils.clean_screan import pause_and_clean
 from DB_manage.update_table import update_tb
 
 def display_menu():
