@@ -1,0 +1,21 @@
+name: GitLeaks Scan
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/*'
+      - 'feature/*'
+
+jobs:
+  gitleaks-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run GitLeaks
+        uses: zricethezav/gitleaks-action@v1.0.0
+        with:
+          args: --path=./ --verbose --redact --exit-code 1
