@@ -1,14 +1,13 @@
 import os
-import logging
+from bdb_aggregate import infomessage
+from traceback import print_exc as trace
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidKey
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
 
 class KeyManager:
     def __init__(self, database, key_size=4096):
@@ -30,9 +29,10 @@ class KeyManager:
         if not os.path.exists(self.database):
             try:
                 os.makedirs(self.database)
-                logger.info(f"Database directory '{self.database}' created.")
+                infomessage(f"Database directory '{self.database}' created.")
             except OSError as e:
-                logger.error(f"Error creating database directory: {e}")
+                infomessage(f"Error creating database directory: {e}")
+                infomessage(trace())
                 raise RuntimeError(f"Error creating database directory: {e}")
 
     def generate_keys(self):
@@ -57,9 +57,10 @@ class KeyManager:
                 priv_file.write(private_key)
             with open(self.public_key_file, "wb") as pub_file:
                 pub_file.write(public_key)
-            logger.info("Keys generated and saved successfully.")
+            infomessage("Keys generated and saved successfully.")
         except (IOError, Exception) as e:
-            logger.error(f"Error during key generation: {e}")
+            infomessage(f"Error during key generation: {e}")
+            infomessage(trace())
             raise RuntimeError(f"Unexpected error during key generation: {e}")
 
     def load_public_key(self):
@@ -102,20 +103,22 @@ class KeyManager:
             if decrypted_data != test_data:
                 raise ValueError("Public and private keys do not match.")
         except ValueError as e:
-            logger.error(f"Key verification failed: {e}")
+            infomessage(f"Key verification failed: {e}")
+            infomessage(trace())
             raise RuntimeError(f"Unexpected error verifying key pair: {e}")
     
     def key_checker(self):
         """Check the validity of key files and their pair. Generate keys if missing."""
         try:
             if not (os.path.exists(self.private_key_file) and os.path.exists(self.public_key_file)):
-                logger.info("Key files are missing. Generating new keys...")
+                infomessage("Key files are missing. Generating new keys...")
                 self.generate_keys()
             
             self.verify_key_pair()
-            logger.info("Keys are valid and match.")
+            infomessage("Keys are valid and match.")
         except Exception as e:
-            logger.error(f"Key check failed: {e}")
+            infomessage(trace())
+            infomessage(f"Key check failed: {e}")
             raise RuntimeError(f"Key check failed: {e}")
 
 class RSAFileEncryptor:
@@ -169,9 +172,10 @@ class RSAFileEncryptor:
                 f.write(encrypted_session_key)
                 f.write(encryptor.tag)  # GCM tag for authentication
                 f.write(encrypted_data)
-            logger.info("File encrypted successfully.")
+            infomessage("File encrypted successfully.")
         except (IOError, ValueError) as e:
-            logger.error(f"Error during file encryption: {e}")
+            infomessage(f"Error during file encryption: {e}")
+            infomessage(trace())
             raise RuntimeError(f"Error during file encryption: {e}")
 
     def decrypt_file(self, input_file):
@@ -207,9 +211,10 @@ class RSAFileEncryptor:
             # Save the decrypted file data
             with open(input_file, "wb") as f:
                 f.write(decrypted_data)
-            logger.info("File decrypted successfully.")
+            infomessage("File decrypted successfully.")
         except (IOError, ValueError, InvalidKey) as e:
-            logger.error(f"Error during file decryption: {e}")
+            infomessage(f"Error during file decryption: {e}")
+            infomessage(trace())
             raise RuntimeError(f"Error during file decryption: {e}")
 
 # Example usage
@@ -220,16 +225,20 @@ if __name__ == "__main__":
     encryptor = RSAFileEncryptor(database)
     try:
         encryptor.encrypt_file(input_file)  # Encrypt a file
-        logger.info("Encryption successful.")
+        infomessage("Encryption successful.")
     except FileNotFoundError as e:
-        logger.error(f"File error: {e}")
+        infomessage(f"File error: {e}")
+        infomessage(trace())
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        infomessage(f"Unexpected error: {e}")
+        infomessage(trace())
 
     try:
         encryptor.decrypt_file(input_file)  # Decrypt a file
-        logger.info("Decryption successful.")
+        infomessage("Decryption successful.")
     except FileNotFoundError as e:
-        logger.error(f"File error: {e}")
+        infomessage(f"File error: {e}")
+        infomessage(trace())
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        infomessage(f"Unexpected error: {e}")
+        infomessage(trace())
