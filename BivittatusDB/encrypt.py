@@ -11,8 +11,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class KeyManager:
-    def __init__(self, database):
-        self.key_size = 4096
+    def __init__(self, database, key_size=4096):
+        """
+        Initialize KeyManager with the path to the database and RSA key size.
+        
+        :param database: Path to the directory where keys are stored.
+        :param key_size: Size of the RSA key in bits (default is 4096).
+        """
+        self.key_size = key_size
         self.database = database
         self.private_key_file = os.path.join(self.database, "private.pem")
         self.public_key_file = os.path.join(self.database, "public.pem")
@@ -95,7 +101,7 @@ class KeyManager:
             )
             if decrypted_data != test_data:
                 raise ValueError("Public and private keys do not match.")
-        except (ValueError, Exception) as e:
+        except ValueError as e:
             logger.error(f"Key verification failed: {e}")
             raise RuntimeError(f"Unexpected error verifying key pair: {e}")
     
@@ -114,6 +120,11 @@ class KeyManager:
 
 class RSAFileEncryptor:
     def __init__(self, database):
+        """
+        Initialize RSAFileEncryptor with the path to the database.
+        
+        :param database: Path to the directory where keys are stored.
+        """
         self.key_manager = KeyManager(database)
         self.database = database
 
