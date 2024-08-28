@@ -1,237 +1,235 @@
-import metaclass
-try:
-    from bdb_aggregate import infomessage
-    from Crypto.PublicKey import RSA
-    from Crypto.Cipher import PKCS1_OAEP, AES
-    from Crypto.Random import get_random_bytes
-    from Crypto.Util.Padding import pad, unpad
-    from Crypto.Protocol.KDF import PBKDF2
-    import os
-except ImportError as e:
-    raise metaclass.BDBException.ImportError(f"ImportError: {e} - Could not import needed files in {__file__}")
-except ModuleNotFoundError as e:
-    raise metaclass.BDBException.ImportError(f"ModuleNotFoundError: {e} - Could not import needed files in {__file__}")
-except Exception as e:
-    raise metaclass.BDBException.ImportError(f"Unexpected error: {e} - Could not import needed files in {__file__}")
+import os
+import logging
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+from cryptography.exceptions import InvalidKey
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class KeyManager:
+    def __init__(self, database, key_size=4096):
+        """
+        Initialize KeyManager with the path to the database and RSA key size.
+        
+        :param database: Path to the directory where keys are stored.
+        :param key_size: Size of the RSA key in bits (default is 4096).
+        """
+        self.key_size = key_size
+        self.database = database
+        self.private_key_file = os.path.join(self.database, "private.pem")
+        self.public_key_file = os.path.join(self.database, "public.pem")
+        self.ensure_database_exists()
+        self.key_checker()
+
+    def ensure_database_exists(self):
+        """Ensure that the database directory exists."""
+        if not os.path.exists(self.database):
+            try:
+                os.makedirs(self.database)
+                logger.info(f"Database directory '{self.database}' created.")
+            except OSError as e:
+                logger.error(f"Error creating database directory: {e}")
+                raise RuntimeError(f"Error creating database directory: {e}")
+
+    def generate_keys(self):
+        """Generate RSA key pair and save to files."""
+        try:
+            key = rsa.generate_private_key(
+                public_exponent=65537,
+                key_size=self.key_size,
+                backend=default_backend()
+            )
+            private_key = key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+            public_key = key.public_key().public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+            os.makedirs(os.path.dirname(self.private_key_file), exist_ok=True)
+            with open(self.private_key_file, "wb") as priv_file:
+                priv_file.write(private_key)
+            with open(self.public_key_file, "wb") as pub_file:
+                pub_file.write(public_key)
+            logger.info("Keys generated and saved successfully.")
+        except (IOError, Exception) as e:
+            logger.error(f"Error during key generation: {e}")
+            raise RuntimeError(f"Unexpected error during key generation: {e}")
+
+    def load_public_key(self):
+        """Load the public key from file."""
+        if not os.path.exists(self.public_key_file):
+            raise FileNotFoundError(f"Public key file '{self.public_key_file}' does not exist.")
+        with open(self.public_key_file, "rb") as pub_file:
+            return serialization.load_pem_public_key(pub_file.read(), backend=default_backend())
+        
+    def load_private_key(self):
+        """Load the private key from file."""
+        if not os.path.exists(self.private_key_file):
+            raise FileNotFoundError(f"Private key file '{self.private_key_file}' does not exist.")
+        with open(self.private_key_file, "rb") as priv_file:
+            return serialization.load_pem_private_key(priv_file.read(), password=None, backend=default_backend())
+        
+    def verify_key_pair(self):
+        """Verify that the public and private key pair match."""
+        private_key = self.load_private_key()
+        public_key = self.load_public_key()
+        
+        try:
+            test_data = b"test"
+            encrypted_data = public_key.encrypt(
+                test_data,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                )
+            )
+            decrypted_data = private_key.decrypt(
+                encrypted_data,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                )
+            )
+            if decrypted_data != test_data:
+                raise ValueError("Public and private keys do not match.")
+        except ValueError as e:
+            logger.error(f"Key verification failed: {e}")
+            raise RuntimeError(f"Unexpected error verifying key pair: {e}")
+    
+    def key_checker(self):
+        """Check the validity of key files and their pair. Generate keys if missing."""
+        try:
+            if not (os.path.exists(self.private_key_file) and os.path.exists(self.public_key_file)):
+                logger.info("Key files are missing. Generating new keys...")
+                self.generate_keys()
+            
+            self.verify_key_pair()
+            logger.info("Keys are valid and match.")
+        except Exception as e:
+            logger.error(f"Key check failed: {e}")
+            raise RuntimeError(f"Key check failed: {e}")
 
 class RSAFileEncryptor:
     def __init__(self, database):
-        self.key_size = 4096
+        """
+        Initialize RSAFileEncryptor with the path to the database.
+        
+        :param database: Path to the directory where keys are stored.
+        """
+        self.key_manager = KeyManager(database)
         self.database = database
-        self.private_key_file = f"./{self.database}/private.pem"
-        self.public_key_file = f"./{self.database}/public.pem"
 
     def generate_keys(self):
-        try:
-            key = RSA.generate(self.key_size)
-            private_key = key.export_key()
-            public_key = key.publickey().export_key()
-
-            os.makedirs(os.path.dirname(self.private_key_file), exist_ok=True)
-
-            with open(self.private_key_file, "wb") as priv_file:
-                priv_file.write(private_key)
-
-            with open(self.public_key_file, "wb") as pub_file:
-                pub_file.write(public_key)
-        except IOError as e:
-            raise RuntimeError(f"Error writing key files: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during key generation: {e}")
+        """Delegate key generation to KeyManager."""
+        self.key_manager.generate_keys()
 
     def encrypt_file(self, input_file):
+        """Encrypt a file using RSA and AES."""
         if not os.path.exists(input_file):
             raise FileNotFoundError(f"The file {input_file} does not exist.")
         
         try:
-            with open(self.public_key_file, "rb") as pub_file:
-                public_key = RSA.import_key(pub_file.read())
-            cipher_rsa = PKCS1_OAEP.new(public_key)
-
-            # Generate symmetric key (AES)
-            session_key = get_random_bytes(16)
-
+            public_key = self.key_manager.load_public_key()
+            
+            # Generate a symmetric AES key
+            session_key = os.urandom(32)
+            
             # Encrypt the session key with RSA
-            encrypted_session_key = cipher_rsa.encrypt(session_key)
-
-            # Encrypt file data with AES
+            encrypted_session_key = public_key.encrypt(
+                session_key,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                )
+            )
+            
+            # Encrypt the file data with AES
             with open(input_file, "rb") as f:
                 file_data = f.read()
-
-            cipher_aes = AES.new(session_key, AES.MODE_CBC)
-            encrypted_data = cipher_aes.encrypt(pad(file_data, AES.block_size))
-
-            # Save the encrypted session key and file data
+            
+            # AES-GCM
+            iv = os.urandom(12)  # Recommended: 96 bits (12 bytes) for GCM
+            cipher = Cipher(algorithms.AES(session_key), modes.GCM(iv), backend=default_backend())
+            encryptor = cipher.encryptor()
+            encrypted_data = encryptor.update(file_data) + encryptor.finalize()
+            
+            # Save the encrypted session key, IV, tag, and encrypted data
             with open(input_file, "wb") as f:
-                f.write(cipher_aes.iv)
+                f.write(iv)
                 f.write(encrypted_session_key)
+                f.write(encryptor.tag)  # GCM tag for authentication
                 f.write(encrypted_data)
+            logger.info("File encrypted successfully.")
         except (IOError, ValueError) as e:
+            logger.error(f"Error during file encryption: {e}")
             raise RuntimeError(f"Error during file encryption: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during file encryption: {e}")
 
     def decrypt_file(self, input_file):
+        """Decrypt a file encrypted using RSA and AES."""
         if not os.path.exists(input_file):
             raise FileNotFoundError(f"The file {input_file} does not exist.")
         
         try:
-            with open(self.private_key_file, "rb") as priv_file:
-                private_key = RSA.import_key(priv_file.read())
-            cipher_rsa = PKCS1_OAEP.new(private_key)
-
-            # Read the encrypted session key and file data
+            private_key = self.key_manager.load_private_key()
+            
+            # Read encrypted session key, IV, tag, and encrypted data
             with open(input_file, "rb") as f:
-                iv = f.read(16)
-                encrypted_session_key = f.read(512)
+                iv = f.read(12)  # 12 bytes for IV in GCM
+                encrypted_session_key = f.read(private_key.key_size // 8)
+                tag = f.read(16)  # 16 bytes for tag in GCM
                 encrypted_data = f.read()
-
+            
             # Decrypt the session key with RSA
-            session_key = cipher_rsa.decrypt(encrypted_session_key)
-
-            # Decrypt file data with AES
-            cipher_aes = AES.new(session_key, AES.MODE_CBC, iv)
-            decrypted_data = unpad(cipher_aes.decrypt(encrypted_data), AES.block_size)
-
+            session_key = private_key.decrypt(
+                encrypted_session_key,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None
+                )
+            )
+            
+            # Decrypt the file data with AES-GCM
+            cipher = Cipher(algorithms.AES(session_key), modes.GCM(iv, tag), backend=default_backend())
+            decryptor = cipher.decryptor()
+            decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
+            
+            # Save the decrypted file data
             with open(input_file, "wb") as f:
                 f.write(decrypted_data)
-        except (IOError, ValueError) as e:
+            logger.info("File decrypted successfully.")
+        except (IOError, ValueError, InvalidKey) as e:
+            logger.error(f"Error during file decryption: {e}")
             raise RuntimeError(f"Error during file decryption: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during file decryption: {e}")
 
-class KeyManager:
-    def __init__(self, database_name):
-        self.database = database_name
-        self.private_key_path = os.path.join(f"./{self.database}", "private.pem")
-        self.public_key_path = os.path.join(f"./{self.database}", "public.pem")
-        self.private_key = None
-        self.public_key = None
+# Example usage
+if __name__ == "__main__":
+    database = "bivittatusDB/test"  # Database path
+    input_file = os.path.join(database, "public.pem")
 
-        # Load keys if they already exist
-        if os.path.exists(self.private_key_path) and os.path.exists(self.public_key_path):
-            self.keyload()
+    encryptor = RSAFileEncryptor(database)
+    try:
+        encryptor.encrypt_file(input_file)  # Encrypt a file
+        logger.info("Encryption successful.")
+    except FileNotFoundError as e:
+        logger.error(f"File error: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
 
-    def key_checker(self):
-        """Generate RSA keys and store them in the database directory if they do not exist."""
-        if os.path.exists(self.private_key_path) and os.path.exists(self.public_key_path):
-            infomessage("Keys already exist. Skipping key generation.")
-            return
-
-        try:
-            key = RSA.generate(4096)
-            private_key = key.export_key()
-            public_key = key.publickey().export_key()
-            os.makedirs(os.path.dirname(self.private_key_path), exist_ok=True)
-            
-            with open(self.public_key_path, "wb") as f:
-                f.write(public_key)
-            with open(self.private_key_path, "wb") as f:
-                f.write(private_key)
-            infomessage("Keys generated and saved.")
-        except IOError as e:
-            raise RuntimeError(f"Error writing key files: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during key generation: {e}")
-
-    def keyload(self):
-        """Load RSA keys from the database directory."""
-        if not os.path.exists(self.private_key_path) or not os.path.exists(self.public_key_path):
-            raise FileNotFoundError("Key files do not exist. Please generate keys first.")
-        
-        try:
-            with open(self.private_key_path, "rb") as f:
-                self.private_key = RSA.import_key(f.read())
-            with open(self.public_key_path, "rb") as f:
-                self.public_key = RSA.import_key(f.read())
-        except (IOError, ValueError) as e:
-            raise RuntimeError(f"Error loading keys: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during key loading: {e}")
-
-    @staticmethod
-    def pad(s, block_size):
-        """Pad the input bytes to be a multiple of block_size."""
-        padding_len = block_size - len(s) % block_size
-        return s + bytes([padding_len]) * padding_len
-
-    @staticmethod
-    def unpad(s):
-        """Remove padding from the input bytes."""
-        padding_len = s[-1]
-        return s[:-padding_len]
-
-class EncryptionManager:
-    def __init__(self, database, encrypted=False):
-        self.database = database
-        self.encrypted = encrypted
-        self.key_manager = KeyManager(database)
-
-    def init(self):
-        """Initialize the database, generate keys, and secure the private key if encryption is enabled."""
-        # Example implementation for creating the database handle
-        # self.CHANDLE.CreateDatabase(self.database.encode())
-        infomessage("info: Generating keys...", end='')
-        self.key_manager.key_checker()
-        if self.encrypted:
-            self.secure("password")  # Use an appropriate password
-        return self
-
-    def use(self):
-        """Prepare the database for use by removing security if encryption is enabled."""
-        if self.encrypted:
-            self.remove_secure("password")  # Use an appropriate password
-        return self
-
-    def derive_key(self, password, salt, key_len=32):
-        """Derive a cryptographic key from a password using PBKDF2."""
-        return PBKDF2(password, salt, dkLen=key_len, count=1000000)
-
-    def secure(self, password):
-        """Encrypt the private key with a password."""
-        if not self.key_manager.private_key:
-            raise RuntimeError("Private key not loaded. Cannot encrypt.")
-
-        try:
-            with open(self.key_manager.private_key_path, "rb") as f:
-                key = f.read()
-            
-            salt = get_random_bytes(16)
-            derived_key = self.derive_key(password, salt)
-            iv = get_random_bytes(16)
-            cipher = AES.new(derived_key, AES.MODE_CBC, iv)
-            padded_key = self.key_manager.pad(key, AES.block_size)
-            ciphertext = iv + salt + cipher.encrypt(padded_key)
-            
-            with open(self.key_manager.private_key_path, "wb") as f:
-                f.write(ciphertext)
-            infomessage("Private key encrypted.")
-        except (IOError, ValueError) as e:
-            raise RuntimeError(f"Error encrypting private key: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during private key encryption: {e}")
-
-    def remove_secure(self, password):
-        """Decrypt the private key with a password."""
-        if not os.path.exists(self.key_manager.private_key_path):
-            raise FileNotFoundError("Encrypted private key file does not exist.")
-        
-        try:
-            with open(self.key_manager.private_key_path, "rb") as f:
-                iv = f.read(16)
-                salt = f.read(16)
-                encrypted_key = f.read()
-            
-            derived_key = self.derive_key(password, salt)
-            cipher = AES.new(derived_key, AES.MODE_CBC, iv)
-            decrypted_key = self.key_manager.unpad(cipher.decrypt(encrypted_key))
-            
-            with open(self.key_manager.private_key_path, "wb") as f:
-                f.write(decrypted_key)
-            
-            self.key_manager.private_key = RSA.import_key(decrypted_key)
-            infomessage("Private key decrypted and loaded.")
-        except (IOError, ValueError) as e:
-            raise RuntimeError(f"Error decrypting private key: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Unexpected error during private key decryption: {e}")
+    try:
+        encryptor.decrypt_file(input_file)  # Decrypt a file
+        logger.info("Decryption successful.")
+    except FileNotFoundError as e:
+        logger.error(f"File error: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
