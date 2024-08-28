@@ -1,5 +1,5 @@
 import metaclass
-from traceback import print_exc as trace
+from traceback import format_exc as trace
 try:     
     import datetime, BDB_metadata
     from bdb_aggregate import infomessage

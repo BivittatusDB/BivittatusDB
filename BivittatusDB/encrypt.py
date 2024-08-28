@@ -1,6 +1,6 @@
 import os
 from bdb_aggregate import infomessage
-from traceback import print_exc as trace
+from traceback import format_exc as trace
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
