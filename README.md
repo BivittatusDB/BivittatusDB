@@ -2,11 +2,10 @@
 <img src="./logo.png" />
 </p>
 
-[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.1.0.5")
+[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.1.0.5") !!!BROKEN!!!
 [![Static Badge](https://img.shields.io/badge/PIP%20-%20View-blue)](https://pypi.org/project/bivittatusDB/)
 ![Static Badge](https://img.shields.io/badge/MajorBuild-1.1.0.5-%20green)
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
-
 
 
 # BivittatusDB: Operator-Based Relational Database Management System
@@ -22,10 +21,11 @@ This is a Python-based relational database management system (RDBMS) designed fr
 - **Security**: All databases are asymmetrically encrypted with a user defined password for each database.
 
 ## Installation
-Installation is now available through pip, via the latest release. To get the latest fix (with beta features) use
+Installation is now available through pip, via the latest release. To get the latest fix (!!!BROKEN!!!) (with beta features) use
 ```bash
 pip install bivittatusDB
 ```
+(UNTIL FIX: use `pip install bivittatusDB==1.1.0.4`)
 The last build is unavailable at this time. Based on the [release schedule](https://github.com/HarbingerOfFire/bivittatusDB/wiki/dbed-0001), release 2.0.0.0 should be released 08/01/2025. The closest working version of build 1.0.0.0 available on PyPi is v1.0.0.1
 ```bash
 pip install bivittatusDB==1.0.0.1
