@@ -35,7 +35,7 @@ ON=True
 OFF=False
 ALL=None
 PRIMARY=None
-VERBOSE=ON
+VERBOSE=OFF
 
 class infomessage():
     def __init__(self, message: str, **print_kwargs) -> None:
