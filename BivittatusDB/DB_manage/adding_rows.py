@@ -3,19 +3,33 @@ import time
 import BivittatusDB as bdb
 
 def add_names_to_db():
-    # Initialize the database
-    test_db = bdb.database("test").init()
+    # Ask if you want to load an existing database or create a new database
+    db_choice = input("Do you want to load an existing database (y/n): ").strip().lower()
 
-    # Create a new table
-    tb1 = test_db.New_table(
-        "table1",  # Name of the table
-        ("id", "name"),  # Columns are named "id" and "name"
-        (int(), str()),  # id contains int, and name contains str
-        "id"  # id will be the primary key
-    )
+    if db_choice == "y":
+        db_name = input("Enter the name of the database folder: ")
+        table_name = input("Enter the name of the table you want to load: ")
+        test_db = bdb.database(db_name).init()  # Load existing database
+        tb1 = test_db.load_table(table_name)  # Load existing table
+        print(f"Table ‘{table_name}’ successfully loaded.")
+    else:
+        # Attempt to create a new database
+        db_name = input("Enter a name for your DB: ")
+        test_db = bdb.database(db_name).init()
+        table_name = input("Enter a name for the new table: ")  # Ask the user for a table name
+        tb1 = test_db.New_table(
+            table_name,  # Table name
+            ("id", "name"),  # The columns are called ‘id’ and ‘name’
+            (int(), str()),  # id contains int, and name contains str
+            "id"  # id will be the primary key
+        )
+        print("New table created.")
 
-    # Initialize id
-    id = 1
+    # Get the last id in the table to avoid duplicates
+    if len(tb1) > 0:
+        id = max(row[0] for row in tb1) + 1  # Access the first element of each row to get the id
+    else:
+        id = 1
 
     while True:
         # Ask for a name

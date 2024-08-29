@@ -23,7 +23,7 @@ def handle_use_table():
     except Exception as e:
         print(f"Exception: {e}")
     finally:
-        pause_and_clean(0.4)
+        pause_and_clean(5)
 
 def handle_option(option):
     options_map = {
