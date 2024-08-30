@@ -27,9 +27,6 @@ io_lib = load_shared_library()
 
 # _CHANDLE class definition
 class _CHANDLE:
-    def __init__(self):
-        pass
-
     def _call_lib_function(self, func_name, *args, restype=None):
         func = getattr(io_lib, func_name, None)
         if func is None:

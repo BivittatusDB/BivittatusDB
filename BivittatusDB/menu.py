@@ -1,7 +1,6 @@
 from DB_manage.update_table import update_tb
 from DB_manage.removing_rows import remove_rows
 from DB_manage.adding_rows import add_names_to_db
-from DB_manage.removing_rows import remove_rows
 from DB_manage.table_view import use_table
 from bdb_aggregate import pause_and_clean
 
@@ -22,12 +21,6 @@ def display_menu():
         print(option)
 
 def execute_option(option):
-    """
-    Executes the corresponding function for the given option.
-
-    :param option: User-selected option as a string.
-    :return: Boolean indicating whether to continue or exit the menu loop.
-    """
     try:
         if option == "1":
             use_table()

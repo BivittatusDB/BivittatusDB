@@ -58,21 +58,17 @@ def update_tb():
             print("Updated table:")
             print(tb)
 
-            # Ask if the user wants to save the table
-            while True:
-                answer = input("Do you want to save the table? (y/n): ").strip().lower()
-                if answer == "y":
-                    bdb.save(tb)  # Save the table using bdb.save function
-                    print("Table saved successfully.")
-                    break  # Exit the loop after saving the table
-                elif answer == "n":
-                    print("You chose not to save this table.")
-                    break  # Exit the loop after deciding not to save the table
-                else:
-                    print("Choose a correct option (y/n).")
+            
+            answer = input("Do you want to save the table? (y/n): ").strip().lower()
+            if answer == "y":
+                bdb.save(tb)  # Save the table using bdb.save function
+                print("Table saved successfully.")
+                break  # Exit the loop after saving the table
+            elif answer == "n":
+                print("You chose not to save this table.")
+                break  # Exit the loop after deciding not to save the table
+            else:
+                print("Choose a correct option (y/n).")
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-
-# Call the function to update the table
-update_tb()
