@@ -74,8 +74,6 @@ def add_names_to_db():
                     print("Table saved successfully.")
                 except Exception as e:
                     print(f"Error saving table: {e}")
-                finally:
-                    break  # Exit the loop after saving or if an error occurs
             elif answer == "n":
                 print("You chose not to save this table.")
             else:
