@@ -1,5 +1,4 @@
 # Be careful manipulating this module; it works well for this example of a table.
-import time
 import BivittatusDB as bdb
 
 def add_names_to_db():
@@ -15,6 +14,7 @@ def add_names_to_db():
                 test_db = bdb.database(db_name).init()  # Load existing database
                 tb1 = test_db.load_table(table_name)  # Load existing table
                 print(f"Table '{table_name}' successfully loaded.")
+                print(tb1)
             except Exception as e:
                 print(f"Error loading table: {e}")
                 return

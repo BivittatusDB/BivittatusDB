@@ -2,6 +2,7 @@ from bdb_aggregate import pause_and_clean
 from DB_manage.adding_rows import add_names_to_db
 from DB_manage.table_view import use_table
 from DB_manage.update_table import update_tb
+from DB_manage.removing_rows import remove_rows
 
 def display_menu():
     menu_options = [
@@ -12,7 +13,6 @@ def display_menu():
         "Option 5: Print metadata",
         "Option 6: Exit"
     ]
-    pause_and_clean(0)  # Llama a la función para limpiar la pantalla antes de mostrar el menú
     print("What do you want to do?")
     for option in menu_options:
         print(option)
@@ -28,10 +28,10 @@ def handle_use_table():
 def handle_option(option):
     options_map = {
         "1": handle_use_table,
-        "2": lambda: (pause_and_clean(0), add_names_to_db()),
-        "3": lambda: (print("This option is not yet implemented."), pause_and_clean(1)),
-        "4": lambda: (pause_and_clean(0.4), update_tb()),
-        "5": lambda: (print("Module not available"), pause_and_clean(1)),
+        "2": lambda: (pause_and_clean(0.2), add_names_to_db()),
+        "3": lambda: (remove_rows(), pause_and_clean(0.8)),
+        "4": lambda: (update_tb()),
+        "5": lambda: (print("not working now"), pause_and_clean(1)),
         "6": lambda: (print("Exiting...."), pause_and_clean(0.4), False)
     }
     
