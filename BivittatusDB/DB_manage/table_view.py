@@ -10,15 +10,20 @@ def list_database_files(db_directory, extension=".pydb"):
     :param extension: File extension to filter by.
     :return: List of file names with the specified extension in the database directory.
     """
+    if not os.path.isdir(db_directory):
+        print(f"Directory '{db_directory}' does not exist.")
+        return []
+
     try:
         # Get the list of files in the directory
         files = [f for f in os.listdir(db_directory) if f.endswith(extension)]
         return files
-    except FileNotFoundError:
-        print("The database directory does not exist.")
-        return []
+    
     except PermissionError:
-        print("You do not have permission to access the directory.")
+        print(f"You do not have permission to access the directory '{db_directory}'.")
+        return []
+    except Exception as e:
+        print(f"An error occurred while listing files: {e}")
         return []
 
 def use_table():
@@ -36,19 +41,31 @@ def use_table():
         print(file)
 
     # Load the database
-    db = bdb.database("test").use()
-
-    # Choose a table to load
-    table_name = input("Enter the name of the table you want to use: ")
 
     try:
-        #By the moment works like this:
-        tb1 = db.load_table(table_name)
-        print("The current table:")
-        print(tb1)
-        time.sleep(3)
+        db = bdb.database(db_directory).use()
     except Exception as e:
-        print(f"Error loading the table: {e}")
+        print(f"Error initializing the database: {e}")
+        return
+
+    while True:
+        # Choose a table to load
+        table_name = input("Enter the name of the table you want to use (without .pydb extension): ")
+
+        # Check if the table exists in the directory
+        if f"{table_name}.pydb" not in files:
+            print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
+        else:
+            try:
+                # Attempt to load the table
+                tb1 = db.load_table(table_name)
+                print("The current table:")
+                print(tb1)
+                time.sleep(3)
+                break  # Exit loop if table is successfully loaded
+            except Exception as e:
+                print(f"Error loading the table '{table_name}': {e}")
+                break  # Exit loop if there is an error
 
 if __name__ == "__main__":
     use_table()

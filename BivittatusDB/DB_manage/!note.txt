@@ -4,4 +4,10 @@ The adjustments made aim to enhance their applicability and effectiveness in act
 
 Please note that some of these modules are currently in beta and may not be fully functional at this time.
 
+Functional modules:
+adding_rows.py
+removing_rows.py
+update_table.py
+table_view.py
+
 @ScriptSlayer0
