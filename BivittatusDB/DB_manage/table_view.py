@@ -1,24 +1,33 @@
 import BivittatusDB as bdb
-from DB_manage.list_pydb import list_db_files
+from DB_manage.file_operations import get_files_with_extension
 
-def print_pydb_files(db_directory):
-    # List files in the database directory with the .pydb extension
-    files = list_db_files(db_directory)
+def show_files_with_extension(db_directory, extension=".pydb"):
+    """
+    Lists files in the specified directory that match the given extension.
+
+    :param db_directory: Path to the database directory.
+    :param extension: File extension to filter by (default is '.pydb').
+    :return: List of file names with the specified extension.
+    """
+    files = get_files_with_extension(db_directory, extension)
 
     if not files:
-        print("There are no files with the .pydb extension in the database directory.")
+        print(f"There are no files with the '{extension}' extension in the database directory.")
     else:
-        print("Files with the .pydb extension in the database directory:")
+        print(f"Files with the '{extension}' extension in the database directory:")
         for file in files:
             print(file)
     return files
 
 def use_table():
+    """
+    Allows the user to select a table from the database directory and load it.
+    """
     # Prompt the user for the name of the database directory
     db_directory = input("Enter the name of the database directory: ").strip()
 
-    # Print available .pydb files in the directory
-    files = print_pydb_files(db_directory)
+    # Show available files with the .pydb extension in the directory
+    files = show_files_with_extension(db_directory)
     if not files:
         return
 
@@ -36,10 +45,10 @@ def use_table():
         return
 
     while True:
-        # Choose a table to load
+        # Prompt user to choose a table
         table_name = input("Enter the name of the table you want to use (without the .pydb extension): ").strip()
 
-        # Check if the table exists in the directory
+        # Form the complete file name to check
         table_file = f"{table_name}.pydb"
         if table_file not in files:
             print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
@@ -60,3 +69,4 @@ def use_table():
 
 if __name__ == "__main__":
     use_table()
+
