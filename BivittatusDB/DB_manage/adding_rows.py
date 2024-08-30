@@ -66,18 +66,18 @@ def add_names_to_db():
         print("The result of the table:")
         print(tb1)
 
-        while True:
-            answer = input("Do you want to save this table? (y/n): ").strip().lower()
-            if answer == "y":
-                try:
-                    bdb.save(tb1)  # Save the table using bdb.save function
-                    print("Table saved successfully.")
-                except Exception as e:
-                    print(f"Error saving table: {e}")
-            elif answer == "n":
-                print("You chose not to save this table.")
-            else:
-                print("Choose a correct option (y/n).")
+    
+        answer = input("Do you want to save this table? (y/n): ").strip().lower()
+        if answer == "y":
+            try:
+                bdb.save(tb1)  # Save the table using bdb.save function
+                print("Table saved successfully.")
+            except Exception as e:
+                print(f"Error saving table: {e}")
+        elif answer == "n":
+            print("You chose not to save this table.")
+        else:
+            print("Choose a correct option (y/n).")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")

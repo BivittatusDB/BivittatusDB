@@ -36,29 +36,26 @@ def remove_rows():
             # Attempt to delete rows corresponding to the value entered
             try:
                 tb1["name"] - value_to_delete
-                print(f"Filas con el valor '{value_to_delete}' en la columna 'name' eliminadas exitosamente.")
+                print(f"Rows with value ‘{value_to_delete}’ in column ‘name’ successfully deleted.")
             except AttributeError:
-                print(f"El objeto 'table' no tiene el método 'remove_rows'.")
+                print(f"The ‘table’ object does not have a ‘remove_rows’ method.")
             except Exception as e:
-                print(f"Error al eliminar filas: {e}")
+                print(f"Error when deleting rows: {e}")
 
         print("Final table result:")
         print(tb1)
-
-        while True:            
-            answer = input("Do you want to save this table (y/n)? ").strip().lower()
-            if answer == "y":
-                try:
-                    bdb.save(tb1)
-                    print("Table successfully saved.")
-                except Exception as e:
-                    print(f"Error saving the table: {e}")
-                break
-            elif answer == "n":
-                print("You have chosen not to save the table.")
-                break
-            else:
-                print("Please choose one correct option (y/n).")
+        
+        answer = input("Do you want to save this table (y/n)? ").strip().lower()
+        if answer == "y":
+            try:
+                bdb.save(tb1)
+                print("Table successfully saved.")
+            except Exception as e:
+                print(f"Error saving the table: {e}")
+        elif answer == "n":
+            print("You have chosen not to save the table.")
+        else:
+            print("Please choose one correct option (y/n).")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
