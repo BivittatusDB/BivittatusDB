@@ -18,9 +18,7 @@ def list_database_files(db_directory, extension=".pydb"):
         # Get the list of files in the directory
         files = [f for f in os.listdir(db_directory) if f.endswith(extension)]
         return files
-
-
-
+    
     except PermissionError:
         print(f"You do not have permission to access the directory '{db_directory}'.")
         return []
