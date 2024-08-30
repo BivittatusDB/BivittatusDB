@@ -1,69 +1,62 @@
-import time
 import BivittatusDB as bdb
-import os
+from DB_manage.list_pydb import list_db_files
 
-def list_database_files(db_directory, extension=".pydb"):
-    """
-    List all files in the specified database directory with a given extension.
-    
-    :param db_directory: Path to the database directory.
-    :param extension: File extension to filter by.
-    :return: List of file names with the specified extension in the database directory.
-    """
-    if not os.path.isdir(db_directory):
-        print(f"Directory '{db_directory}' does not exist.")
-        return []
-
-    try:
-        # Get the list of files in the directory
-        files = [f for f in os.listdir(db_directory) if f.endswith(extension)]
-        return files
-    except PermissionError:
-        print(f"You do not have permission to access the directory '{db_directory}'.")
-        return []
-    except Exception as e:
-        print(f"An error occurred while listing files: {e}")
-        return []
-
-def use_table():
-    db_directory = input("Enter the name of the database directory: ")
-
+def print_pydb_files(db_directory):
     # List files in the database directory with the .pydb extension
-    files = list_database_files(db_directory)
-    
+    files = list_db_files(db_directory)
+
     if not files:
         print("There are no files with the .pydb extension in the database directory.")
+    else:
+        print("Files with the .pydb extension in the database directory:")
+        for file in files:
+            print(file)
+    return files
+
+def use_table():
+    # Prompt the user for the name of the database directory
+    db_directory = input("Enter the name of the database directory: ").strip()
+
+    # Print available .pydb files in the directory
+    files = print_pydb_files(db_directory)
+    if not files:
         return
 
-    print("Files with the .pydb extension in the database directory:")
-    for file in files:
-        print(file)
-
-    # Load the database
+    # Initialize the database
     try:
         db = bdb.database(db_directory).use()
+    except FileNotFoundError:
+        print(f"The directory '{db_directory}' does not exist.")
+        return
+    except PermissionError:
+        print(f"You do not have permission to access the directory '{db_directory}'.")
+        return
     except Exception as e:
         print(f"Error initializing the database: {e}")
         return
 
     while True:
         # Choose a table to load
-        table_name = input("Enter the name of the table you want to use (without .pydb extension): ")
+        table_name = input("Enter the name of the table you want to use (without the .pydb extension): ").strip()
 
         # Check if the table exists in the directory
-        if f"{table_name}.pydb" not in files:
+        table_file = f"{table_name}.pydb"
+        if table_file not in files:
             print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
-        else:
-            try:
-                # Attempt to load the table
-                tb1 = db.load_table(table_name)
-                print("The current table:")
-                print(tb1)
-                time.sleep(3)
-                break  # Exit loop if table is successfully loaded
-            except Exception as e:
-                print(f"Error loading the table '{table_name}': {e}")
-                break  # Exit loop if there is an error
+            continue
+
+        try:
+            # Attempt to load the table
+            tb1 = db.load_table(table_name)
+            print("Current table:")
+            print(tb1)
+            break  # Exit the loop if the table is successfully loaded
+        except FileNotFoundError:
+            print(f"The table '{table_name}' could not be found in the directory.")
+        except PermissionError:
+            print(f"You do not have permission to access the table file '{table_file}'.")
+        except Exception as e:
+            print(f"Error loading the table '{table_name}': {e}")
 
 if __name__ == "__main__":
     use_table()

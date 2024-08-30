@@ -1,18 +1,38 @@
-# Be careful manipulating this module; it works well for this example of a table.
 import BivittatusDB as bdb
+from bdb_aggregate import pause_and_clean
+from DB_manage.list_pydb import list_db_files
+
+def print_pydb_files(db_directory):
+    files = list_db_files(db_directory)
+    if not files:
+        print("There are no files with the .pydb extension in the database directory.")
+    else:
+        print("Files with the .pydb extension in the database directory:")
+        for file in files:
+            print(file)
+    return files
 
 def add_names_to_db():
     try:
-        # Ask if you want to load an existing database or create a new database
-        db_choice = input("Do you want to load an existing database (y/n): ").strip().lower()
+        # Prompt the user for the choice of database
+        db_choice = input("Do you want to load an existing database (y) or create a new one (n)? ").strip().lower()
+        db_directory = input("Enter the name of the database directory: ").strip()
 
         if db_choice == "y":
-            db_name = input("Enter the name of the database folder: ").strip()
-            table_name = input("Enter the name of the table you want to load: ").strip()
+            # Print and list existing database files
+            files = print_pydb_files(db_directory)
+            if not files:
+                print("No files found to load. Exiting.")
+                return
+
+            table_name = input("Enter the name of the table to load (without the .pydb extension): ").strip()
+            if f"{table_name}.pydb" not in files:
+                print(f"Table '{table_name}' not found in the directory.")
+                return
 
             try:
-                test_db = bdb.database(db_name).init()  # Load existing database
-                tb1 = test_db.load_table(table_name)  # Load existing table
+                test_db = bdb.database(db_directory).init()  # Initialize existing database
+                tb1 = test_db.load_table(table_name)  # Load the specified table
                 print(f"Table '{table_name}' successfully loaded.")
                 print(tb1)
             except Exception as e:
@@ -20,16 +40,17 @@ def add_names_to_db():
                 return
 
         elif db_choice == "n":
-            db_name = input("Enter a name for your DB: ").strip()
+            # For creating a new database
+            db_name = input("Enter a name for your new database: ").strip()
             table_name = input("Enter a name for the new table: ").strip()
 
             try:
-                test_db = bdb.database(db_name).init()
+                test_db = bdb.database(db_name).init()  # Initialize new database
                 tb1 = test_db.New_table(
                     table_name,  # Table name
-                    ("id", "name"),  # The columns are called 'id' and 'name'
-                    (int(), str()),  # id contains int, and name contains str
-                    "id"  # id will be the primary key
+                    ("id", "name"),  # Column names
+                    (int, str),  # Column data types
+                    "id"  # Primary key column
                 )
                 print("New table created.")
             except Exception as e:
@@ -40,48 +61,47 @@ def add_names_to_db():
             print("Invalid choice. Exiting.")
             return
 
-        # Get the last id in the table to avoid duplicates
+        # Determine the next ID for new entries
         try:
             if len(tb1) > 0:
-                id = max(row[0] for row in tb1) + 1  # Access the first element of each row to get the id
+                next_id = max(row[0] for row in tb1) + 1
             else:
-                id = 1
+                next_id = 1
         except Exception as e:
             print(f"Error determining next ID: {e}")
             return
 
+        # Add names to the table
         while True:
-            # Ask for a name
             name = input("Enter a name to add to the table (or 'exit' to end): ").strip()
-
-            # Break loop if user wants to quit
             if name.lower() == 'exit':
                 break
-
-            # Add row to table
             try:
-                tb1 + (id, name)
-                # Increment id
-                id += 1
+                tb1 + (next_id, name)  # Add new row to the table
+                next_id += 1  # Increment ID for the next entry
+                print(f"Succesfull adding name to table: {name}")
             except Exception as e:
                 print(f"Error adding name to table: {e}")
 
+        # Display the result
         print("The result of the table:")
         print(tb1)
 
+        # Ask if the user wants to save the changes
         while True:
             answer = input("Do you want to save this table? (y/n): ").strip().lower()
             if answer == "y":
                 try:
-                    bdb.save(tb1)  # Save the table using bdb.save function
+                    bdb.save(tb1)  # Save the table
                     print("Table saved successfully.")
+                    pause_and_clean(0.4)
                 except Exception as e:
                     print(f"Error saving table: {e}")
                 finally:
-                    break  # Exit the loop after saving or if an error occurs
+                    return
             elif answer == "n":
                 print("You chose not to save this table.")
-                break  # Exit the loop after deciding not to save the table
+                return
             else:
                 print("Choose a correct option (y/n).")
 
