@@ -78,7 +78,6 @@ def add_names_to_db():
                     break  # Exit the loop after saving or if an error occurs
             elif answer == "n":
                 print("You chose not to save this table.")
-                break  # Exit the loop after deciding not to save the table
             else:
                 print("Choose a correct option (y/n).")
 
