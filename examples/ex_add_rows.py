@@ -17,4 +17,4 @@ tb1=test_db.New_table("table1", #name "table1"
 #add rows to the table
 tb1+(1, "Alice") 
 tb1+(2, "Bob")
-tb1+(3, "Cindy")
+print((3, "Cindy"), file=tb1) # tables are now writable too!
