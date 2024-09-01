@@ -32,7 +32,7 @@ def remove_rows():
                     tb1["name"] - value_to_delete
                     print(f"Rows with value '{value_to_delete}' in column 'name' successfully deleted.")
                 except AttributeError:
-                    print(f"The 'table' object does not have a 'remove_rows' method.")
+                    print("The table object does not have a remove_rows method.")
                 except Exception as e:
                     print(f"Error when deleting rows: {e}")
 

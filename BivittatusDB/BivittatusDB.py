@@ -24,7 +24,7 @@ class database:
         '''load preexisting tables from the database.'''
         try:
             return table(self.db, self.database_name, table_name)
-        except Exception as e:
+        except Exception:
             raise metaclass.BDBException.IOError(f"Error finding table {table_name}")
     
     def New_table(self, name:str, columns:tuple, data_types:tuple, primary:str=None, foreign:list=None):
