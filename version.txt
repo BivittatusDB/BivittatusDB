@@ -1,1 +1,1 @@
-BivittatusDB v1.1.0.6
+BivittatusDB v1.1.1.0

@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="bivittatusDB",
-    version="1.1.0.6",  # Update with the appropriate version
+    version="1.1.1.0",  # NOSONAR
     author="HarbingerOfFire",
     author_email="harbingeroffire@proton.me",  # Replace with the author's email
     description="Operator Based Relational Database Management system for python",
