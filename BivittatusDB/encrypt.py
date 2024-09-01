@@ -7,8 +7,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidKey
 
-
-
 class KeyManager:
     def __init__(self, database, key_size=4096):
         """
@@ -214,7 +212,7 @@ class RSAFileEncryptor:
             infomessage("File decrypted successfully.")
         except (IOError, ValueError, InvalidKey) as e:
             infomessage(f"Error during file decryption: {e}")
-            infomessage(trace(f"Error during file decryption (verbosed): {e}"))
+            infomessage(trace())
             raise RuntimeError(f"Error during file decryption: {e}")
 
 # Example usage
@@ -228,17 +226,17 @@ if __name__ == "__main__":
         infomessage("Encryption successful.")
     except FileNotFoundError:
         infomessage(f"File error: {FileNotFoundError}")
-        infomessage(trace(f"File error (verbosed): {FileNotFoundError}"))
+        infomessage(trace())
     except Exception:
         infomessage(f"Unexpected error: {Exception}")
-        infomessage(trace(infomessage(trace(f"Unexpected error (verbosed): {Exception}"))))
+        infomessage(trace())
 
     try:
         encryptor.decrypt_file(input_file)  # Decrypt a file
         infomessage("Decryption successful.")
     except FileNotFoundError:
         infomessage(f"File error: {FileNotFoundError}")
-        infomessage(trace(infomessage(trace(f"Unexpected error (verbosed): {FileNotFoundError}"))))
+        infomessage(trace())
     except Exception:
         infomessage(f"Unexpected error: {Exception}")
-        infomessage(trace(f"Unexpected error (verbosed): {Exception}"))
+        infomessage(trace())
