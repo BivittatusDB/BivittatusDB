@@ -7,8 +7,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidKey
 
-
-
 class KeyManager:
     def __init__(self, database, key_size=4096):
         """
@@ -226,19 +224,19 @@ if __name__ == "__main__":
     try:
         encryptor.encrypt_file(input_file)  # Encrypt a file
         infomessage("Encryption successful.")
-    except FileNotFoundError as e:
-        infomessage(f"File error: {e}")
+    except FileNotFoundError:
+        infomessage(f"File error: {FileNotFoundError}")
         infomessage(trace())
-    except Exception as e:
-        infomessage(f"Unexpected error: {e}")
+    except Exception:
+        infomessage(f"Unexpected error: {Exception}")
         infomessage(trace())
 
     try:
         encryptor.decrypt_file(input_file)  # Decrypt a file
         infomessage("Decryption successful.")
-    except FileNotFoundError as e:
-        infomessage(f"File error: {e}")
+    except FileNotFoundError:
+        infomessage(f"File error: {FileNotFoundError}")
         infomessage(trace())
-    except Exception as e:
-        infomessage(f"Unexpected error: {e}")
+    except Exception:
+        infomessage(f"Unexpected error: {Exception}")
         infomessage(trace())

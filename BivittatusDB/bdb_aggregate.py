@@ -1,6 +1,6 @@
 import metaclass
 try: 
-    from statistics import *
+    from statistics import stdev, pstdev, mode, median
     import shutil
     import os
     import platform

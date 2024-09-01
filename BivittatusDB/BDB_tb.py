@@ -4,7 +4,7 @@ try:
     import datetime, BDB_metadata
     from bdb_aggregate import infomessage
     from encrypt import KeyManager
-    from metaclass import *
+    from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
     from bdb_foreign import ForeignKey, json
     from ast import literal_eval
 except:
@@ -82,7 +82,7 @@ class table(metaclass=TableMeta):
                 return new
         except Exception:
             infomessage(trace())
-            return f"Error saving database"
+            return "Error saving database"
         
         '''Commit changes to database. Call using save function in main file'''
         if name==None or name==self.table_name:
@@ -216,11 +216,11 @@ class table(metaclass=TableMeta):
         data_types=self.__load_metadata__()[1].column
         if (len(data_types)-3) != (len(new_data)):
             infomessage(trace())
-            raise metaclass.BDBException.StructureError(f"new data doesn't match table structure")
+            raise metaclass.BDBException.StructureError("new data doesn't match table structure")
         for i in range(len(new_data)):
             if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
                 infomessage(trace())
-                raise metaclass.BDBException.TypeError(f"New data does not match defined datatypes.")
+                raise metaclass.BDBException.TypeError("New data does not match defined datatypes.")
         return True
 
     def __check_primary__(self, new_data: tuple)->bool:

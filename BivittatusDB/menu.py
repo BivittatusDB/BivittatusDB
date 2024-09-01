@@ -2,9 +2,11 @@ from DB_manage.update_table import update_tb
 from DB_manage.removing_rows import remove_rows
 from DB_manage.adding_rows import add_names_to_db
 from DB_manage.table_view import use_table
+from DB_manage.metadata import print_metadata
 from bdb_aggregate import pause_and_clean
 
 def display_menu():
+    pause_and_clean(0)
     """
     Displays the main menu options to the user.
     """
@@ -16,26 +18,27 @@ def display_menu():
         "Option 5: Print metadata",
         "Option 6: Exit"
     ]
-    print("\nWhat do you want to do?")
+    print("What do you want to do?")
     for option in menu_options:
         print(option)
 
 def execute_option(option):
     try:
         if option == "1":
+            pause_and_clean(0)
             use_table()
-            pause_and_clean(1.2)
         elif option == "2":
-            pause_and_clean(0.2)
+            pause_and_clean(0)
             add_names_to_db()
         elif option == "3":
+            pause_and_clean(0)
             remove_rows()
-            pause_and_clean(0.8)
         elif option == "4":
+            pause_and_clean(0)
             update_tb()
         elif option == "5":
-            print("This option is not working right now.")
-            pause_and_clean(1)
+            pause_and_clean(0)
+            print_metadata()
         elif option == "6":
             print("Exiting....")
             pause_and_clean(0.4)
@@ -44,8 +47,8 @@ def execute_option(option):
             print("Incorrect option. Please choose a valid option.")
             pause_and_clean(0.8)
         return True
-    except Exception as e:
-        print(f"Exception: {e}")
+    except Exception:
+        print(f"Exception: {Exception}")
         pause_and_clean(1)
 
 def main_menu():

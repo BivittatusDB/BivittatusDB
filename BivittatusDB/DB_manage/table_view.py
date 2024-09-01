@@ -1,6 +1,7 @@
 import time
-import BivittatusDB as bdb
 import os
+import BivittatusDB as bdb
+from bdb_aggregate import pause_and_clean
 
 def list_database_files(db_directory, extension=".pydb"):
     """
@@ -22,8 +23,8 @@ def list_database_files(db_directory, extension=".pydb"):
     except PermissionError:
         print(f"You do not have permission to access the directory '{db_directory}'.")
         return []
-    except Exception as e:
-        print(f"An error occurred while listing files: {e}")
+    except Exception:
+        print(f"An error occurred while listing files: {Exception}")
         return []
 
 def use_table():
@@ -34,6 +35,7 @@ def use_table():
     
     if not files:
         print("There are no files with the .pydb extension in the database directory.")
+        pause_and_clean(1.5)
         return
 
     print("Files with the .pydb extension in the database directory:")
@@ -44,8 +46,8 @@ def use_table():
 
     try:
         db = bdb.database(db_directory).use()
-    except Exception as e:
-        print(f"Error initializing the database: {e}")
+    except Exception:
+        print(f"Error initializing the database: {Exception}")
         return
 
     while True:
@@ -63,8 +65,8 @@ def use_table():
                 print(tb1)
                 time.sleep(3)
                 break  # Exit loop if table is successfully loaded
-            except Exception as e:
-                print(f"Error loading the table '{table_name}': {e}")
+            except Exception:
+                print(f"Error loading the table '{table_name}': {Exception}")
                 break  # Exit loop if there is an error
 
 if __name__ == "__main__":
