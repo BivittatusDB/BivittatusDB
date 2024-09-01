@@ -6,7 +6,6 @@ import metaclass
 try: 
     from BDB_io import Handler
     import datetime
-    from typing import Union
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -59,7 +58,7 @@ class table:
         '''return the number of values in the data'''
         return len(self.data)
     
-    def __getitem__(self, key: Union[int, str]):
+    def __getitem__(self, key: int | str):
         '''return a column from the data. Requirement to compare data'''
         self.column=[]
         data=self.data
@@ -187,6 +186,3 @@ class table:
         for row in rows:
             table_data.append(self.data[row])
         return table(self.database, f"pydb_{time}", True, table_data)
-    
-if __name__=='__main__':
-    pass

@@ -4,7 +4,7 @@ try:
     import datetime, BDB_metadata
     from bdb_aggregate import infomessage
     from encrypt import KeyManager
-    from metaclass import *
+    from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
     from bdb_foreign import ForeignKey, json
     from ast import literal_eval
 except:

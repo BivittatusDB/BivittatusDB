@@ -1,6 +1,6 @@
 import metaclass
-try: 
-    from bdb_aggregate import *
+try:
+    from bdb_aggregate import PRIMARY
     from BDB_tb import *
     from BDB_io import Handler
     from bdb_foreign import ForeignKey

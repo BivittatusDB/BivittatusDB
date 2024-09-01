@@ -16,6 +16,7 @@ def update_tb():
             tb = update_db.load_table(current_tb)
         else:
             print(f"Error: The database directory '{current_db}' does not exist.")
+            pause_and_clean(1.5)
             return
 
         # Function to get valid input from the user
@@ -70,5 +71,5 @@ def update_tb():
             else:
                 print("Choose a correct option (y/n).")
 
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+    except Exception:
+        print(f"An error occurred: {Exception}")
