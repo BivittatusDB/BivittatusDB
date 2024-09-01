@@ -214,7 +214,7 @@ class RSAFileEncryptor:
             infomessage("File decrypted successfully.")
         except (IOError, ValueError, InvalidKey) as e:
             infomessage(f"Error during file decryption: {e}")
-            infomessage(trace())
+            infomessage(trace(f"Error during file decryption (verbosed): {e}"))
             raise RuntimeError(f"Error during file decryption: {e}")
 
 # Example usage
@@ -226,19 +226,19 @@ if __name__ == "__main__":
     try:
         encryptor.encrypt_file(input_file)  # Encrypt a file
         infomessage("Encryption successful.")
-    except FileNotFoundError as e:
-        infomessage(f"File error: {e}")
-        infomessage(trace())
-    except Exception as e:
-        infomessage(f"Unexpected error: {e}")
-        infomessage(trace())
+    except FileNotFoundError:
+        infomessage(f"File error: {FileNotFoundError}")
+        infomessage(trace(f"File error (verbosed): {FileNotFoundError}"))
+    except Exception:
+        infomessage(f"Unexpected error: {Exception}")
+        infomessage(trace(infomessage(trace(f"Unexpected error (verbosed): {Exception}"))))
 
     try:
         encryptor.decrypt_file(input_file)  # Decrypt a file
         infomessage("Decryption successful.")
-    except FileNotFoundError as e:
-        infomessage(f"File error: {e}")
-        infomessage(trace())
-    except Exception as e:
-        infomessage(f"Unexpected error: {e}")
-        infomessage(trace())
+    except FileNotFoundError:
+        infomessage(f"File error: {FileNotFoundError}")
+        infomessage(trace(infomessage(trace(f"Unexpected error (verbosed): {FileNotFoundError}"))))
+    except Exception:
+        infomessage(f"Unexpected error: {Exception}")
+        infomessage(trace(f"Unexpected error (verbosed): {Exception}"))

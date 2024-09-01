@@ -24,7 +24,7 @@ def initialize_table(db_name, table_name, db_choice):
         return None
 
 def add_names_to_table(tb1):
-    id = max((row[0] for row in tb1), default=0) + 1
+    record_id = max((row[0] for row in tb1), default=0) + 1
     while True:
         pause_and_clean(0)
         print(tb1)
@@ -32,8 +32,8 @@ def add_names_to_table(tb1):
         if name.lower() == 'exit':
             break
         try:
-            tb1 + (id, name)
-            id += 1
+            tb1 + (record_id, name)
+            record_id += 1
         except Exception as e:
             print(f"Error adding name to table: {e}")
 
