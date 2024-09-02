@@ -46,8 +46,8 @@ def get_next_id(tb1):
         return None
 
 def add_names_to_table(tb1):
-    id = get_next_id(tb1)
-    if id is None:
+    ID = get_next_id(tb1)
+    if ID is None:
         return
 
     while True:

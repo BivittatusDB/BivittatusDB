@@ -256,10 +256,10 @@ class table(metaclass=TableMeta):
             self.data.append(value)
         self.__try_commit__()
 
-    def write(self, value:tuple)->None:
+    def write(self, value:str)->None:
         '''Makes tables writeable'''
         if value=="\n": #print adds a newline by calling itself again seperatly. This was causing errors.
-            return None
+            return None 
         self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
         
     def __find_compare__(self, operator:str, value):
