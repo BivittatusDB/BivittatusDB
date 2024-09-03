@@ -4,6 +4,7 @@ try:
     import datetime, BDB_metadata
     from bdb_aggregate import infomessage
     from BDB_io import Handler
+    from tty_log import logger
     from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
     from bdb_foreign import ForeignKey, json
     from ast import literal_eval
@@ -25,6 +26,20 @@ class table(metaclass=TableMeta):
         else:
             self.data=temp_data
             self.columns=self.data.pop(0)
+        self.logger=logger(f"{database}/{table_name}")
+
+    def log(self):
+        self.logger.start()
+
+    def stop_log(self):
+        self.logger.stop()
+
+    def __del__(self):
+        self.stop_log()
+    
+    def write_log(self, message:str, level:str="INFO"):
+        if hasattr(self.logger, "fd"):
+            self.logger.write(message,level)
 
     def __try_commit__(self):
         '''is autocommit turned on, it will save the table when a change is made.'''
@@ -485,6 +500,14 @@ class table(metaclass=TableMeta):
 
     def detach(self)->None:
         self.seeker=-1
+    
+    def isatty(self)->bool:
+        return hasattr(self.logger, "fd") #if a file descriptor exists, it is connected to a terminal
+    
+    def fileno(self)->int:
+        if hasattr(self.logger, "fd"):
+            return self.logger.fd
+        return None
 
 
 class SAVEPOINT(metaclass=SavepointMeta):
