@@ -46,3 +46,6 @@ print(tb1.tell())
 
 #Read several lines starting at current position
 print(tb1.readlines(2))
+
+#write to disk
+tb1.flush()

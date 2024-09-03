@@ -30,6 +30,14 @@ def drop(database:str):
     except:
         raise metaclass.BDBException.DeletionError("Could not drop database {database}")
 
+def show(database:str):
+    files=os.listdir(database)
+    tables=[]
+    for file in files:
+        if file.endswith(".pydb"):
+            tables.append(file[:-5])
+    print(tables)
+
 #File seeking variables
 FBEGIN = 0
 FCURRENT=1
