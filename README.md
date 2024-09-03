@@ -2,10 +2,11 @@
 <img src="./logo.png" />
 </p>
 
-[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.1.1.0")
+[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.2.0.0")
 [![Static Badge](https://img.shields.io/badge/PIP%20-%20View-blue)](https://pypi.org/project/bivittatusDB/)
-![Static Badge](https://img.shields.io/badge/MajorBuild-1.1.1.0-%20green)
+![Static Badge](https://img.shields.io/badge/MajorBuild-1.2.0.0-%20green)
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=HarbingerOfFire_bivittatusDB&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=HarbingerOfFire_bivittatusDB)
 
 
 # BivittatusDB: Operator-Based Relational Database Management System
@@ -21,7 +22,7 @@ This is a Python-based relational database management system (RDBMS) designed fr
 - **Security**: All databases are asymmetrically encrypted with a user defined password for each database.
 
 ## Installation
-Installation is now available through pip, via the latest release. To get the latest fix (!!!BROKEN!!!) (with beta features) use
+Installation is now available through pip, via the latest release. To get the latest fix (with beta features) use
 ```bash
 pip install bivittatusDB
 ```

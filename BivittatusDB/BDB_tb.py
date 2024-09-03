@@ -3,7 +3,7 @@ from traceback import format_exc as trace
 try:     
     import datetime, BDB_metadata
     from bdb_aggregate import infomessage
-    from encrypt import KeyManager
+    from BDB_io import Handler
     from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
     from bdb_foreign import ForeignKey, json
     from ast import literal_eval
@@ -13,7 +13,7 @@ except:
 class table(metaclass=TableMeta): ...
 
 class table(metaclass=TableMeta):
-    def __init__(self, handler:KeyManager, database, table_name, temp:bool=False, temp_data:list=None) -> table:
+    def __init__(self, handler:Handler, database, table_name, temp:bool=False, temp_data:list=None) -> table:
         self.io=handler
         self.autocommit=False
         self.database=database
@@ -255,12 +255,6 @@ class table(metaclass=TableMeta):
         if self.__check_type__(value) and self.__check_primary__(value) and self.__check_foreign__(value):
             self.data.append(value)
         self.__try_commit__()
-
-    def write(self, value:str)->None:
-        '''Makes tables writeable'''
-        if value=="\n": #print adds a newline by calling itself again seperatly. This was causing errors.
-            return None 
-        self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
         
     def __find_compare__(self, operator:str, value):
         self.value=value
@@ -424,6 +418,58 @@ class table(metaclass=TableMeta):
     def __invert__(self):
         self.__init__(self.io, self.database, self.table_name,self.temp, self.data)
         return self
+
+    def write(self, value:str | tuple)->None:
+        '''Makes tables writeable'''
+        if value=="\n": #print adds a newline by calling itself again seperatly. This was causing errors.
+            return None 
+        if isinstance(value, str):
+            self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
+        else:
+            self.__add__(value)
+
+    def writeable(self)->bool:
+        return self.io.writable
+    
+    def truncate(self, lines:int)->int:
+        del self.data[lines:]
+        return lines
+    
+    def tell(self)->int:
+        return self.seeker
+    
+    def seek(self, offset:int, position:int)->tuple:
+        if position in (0, 1, 2):
+            self.seeker = [offset, self.seeker + offset, -1 - offset][position]
+        else:
+            raise ValueError("Position not supoorted (use range [0,2] or FBEGIN, FCURRENT, or FEND)")
+        return self.seeker
+    
+    def seekable(self)->bool:
+        return (not self.seeker==-1) and self.io.writable
+        #if the table is no longer seekable, set seeker to -1
+    
+    def readable(self)->bool:
+        return self.io.writable
+    
+    def read(self)->tuple:
+        return self.data
+    
+    def readline(self, position:int=None)->tuple:
+        if not hasattr(self, "seeker"):
+            self.seeker=0
+        self.seeker==position or self.seeker
+        data=self.data[self.seeker]
+        self.seeker=(self.seeker+1)%len(self)
+        return data
+    
+    def readlines(self, lines:int)->list[tuple]:
+        if not hasattr(self, "seeker"):
+            self.seeker=0
+        data=self.data[self.seeker:self.seeker+lines]
+        self.seeker=(self.seeker+lines+1)%len(self)
+        return data
+
 
 class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):

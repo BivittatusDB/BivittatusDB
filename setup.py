@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="bivittatusDB",
-    version="1.1.1.0",  # NOSONAR
+    version="1.2.0.0",  # NOSONAR
     author="HarbingerOfFire",
     author_email="harbingeroffire@proton.me",  # Replace with the author's email
     description="Operator Based Relational Database Management system for python",
@@ -25,5 +25,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=["pycryptodome==3.20.0"],
+    install_requires=["cryptography==42.0.8"],
 )

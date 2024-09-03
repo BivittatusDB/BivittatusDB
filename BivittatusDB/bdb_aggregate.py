@@ -30,6 +30,11 @@ def drop(database:str):
     except:
         raise metaclass.BDBException.DeletionError("Could not drop database {database}")
 
+#File seeking variables
+FBEGIN = 0
+FCURRENT=1
+FEND = 2
+
 #True and False commands for auto commit
 ON=True
 OFF=False
