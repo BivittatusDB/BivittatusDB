@@ -46,3 +46,4 @@ class BDBException:
     class KeyError(Exception): ... #Used when there is a problem with foreign or primary keys
     class RefError(Exception): ... #Used when refrenced table is not found
     class TransactionError(Exception): ... #Used for transaction management
+    class SeekerError(Exception): ... #used when something is wrong with the seeker for file-like management (e.g. seeker = -1)

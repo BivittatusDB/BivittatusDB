@@ -419,14 +419,20 @@ class table(metaclass=TableMeta):
         self.__init__(self.io, self.database, self.table_name,self.temp, self.data)
         return self
 
-    def write(self, value:str | tuple)->None:
+    def write(self, value:str | tuple, line=None)->None:
         '''Makes tables writeable'''
         if value=="\n": #print adds a newline by calling itself again seperatly. This was causing errors.
-            return None 
-        if isinstance(value, str):
-            self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
+            return None
+        if self.seeker==-1:
+            raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}") 
+        if line==None:
+            if isinstance(value, str):
+                self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
+            else:
+                self.__add__(value)
         else:
-            self.__add__(value)
+            self.seeker=line
+            self.data[line]=value #specify line parameter to overwrite data (not recommended)
 
     def writeable(self)->bool:
         return self.io.writable
@@ -456,6 +462,8 @@ class table(metaclass=TableMeta):
         return self.data
     
     def readline(self, position:int=None)->tuple:
+        if self.seeker==-1:
+            raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}")
         if not hasattr(self, "seeker"):
             self.seeker=0
         self.seeker==position or self.seeker
@@ -464,11 +472,19 @@ class table(metaclass=TableMeta):
         return data
     
     def readlines(self, lines:int)->list[tuple]:
+        if self.seeker==-1:
+            raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}")
         if not hasattr(self, "seeker"):
             self.seeker=0
         data=self.data[self.seeker:self.seeker+lines]
         self.seeker=(self.seeker+lines+1)%len(self)
         return data
+    
+    def flush(self)->None:
+        self.__save__()
+
+    def detach(self)->None:
+        self.seeker=-1
 
 
 class SAVEPOINT(metaclass=SavepointMeta):
