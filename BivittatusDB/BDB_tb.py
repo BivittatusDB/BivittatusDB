@@ -35,7 +35,8 @@ class table(metaclass=TableMeta):
         self.logger.stop()
 
     def __del__(self):
-        self.stop_log()
+        if hasattr(self.logger, "fd"):
+            self.stop_log()
     
     def write_log(self, message:str, level:str="INFO"):
         if hasattr(self.logger, "fd"):
