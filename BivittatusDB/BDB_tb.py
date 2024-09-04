@@ -32,7 +32,8 @@ class table(metaclass=TableMeta):
         self.logger.start()
 
     def stop_log(self):
-        self.logger.stop()
+        if hasattr(self.logger, "fd"):
+            self.logger.stop()
 
     def __del__(self):
         if hasattr(self.logger, "fd"):

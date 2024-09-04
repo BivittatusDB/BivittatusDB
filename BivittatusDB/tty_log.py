@@ -9,7 +9,8 @@ class logger:
         self.thread=self.thread_logger()
 
     def __del__(self):
-        os.remove(self.logfile)
+        if hasattr(self, "fd"):
+            os.remove(self.logfile)
 
     def thread_logger(self):
         thread=threading.Thread(target=self.logger, daemon=True)
