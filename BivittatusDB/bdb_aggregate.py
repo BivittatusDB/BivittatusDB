@@ -30,13 +30,21 @@ def drop(database:str):
     except:
         raise metaclass.BDBException.DeletionError("Could not drop database {database}")
 
-def show(database:str):
-    files=os.listdir(database)
-    tables=[]
-    for file in files:
-        if file.endswith(".pydb"):
-            tables.append(file[:-5])
-    print(tables)
+def show(database: str):
+    if not os.path.isdir(database):
+        print(f"Directory '{database}' does not exist.")
+        return []
+
+    try:
+        files = os.listdir(database)
+        tables = [file[:-5] for file in files if file.endswith(".pydb")]
+        return tables
+    except PermissionError:
+        print(f"You do not have permission to access the directory '{database}'.")
+        return []
+    except Exception as e:
+        print(f"An error occurred while listing files: {e}")
+        return []
 
 #File seeking variables
 FBEGIN = 0

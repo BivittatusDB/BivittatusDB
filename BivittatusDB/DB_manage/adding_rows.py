@@ -1,13 +1,48 @@
+import os
 import BivittatusDB as bdb
 from bdb_aggregate import pause_and_clean
 
+#Please add show() to remove listing on this current module
+
 def get_db_choice():
+    print("To create a new database input: 'n'")
     return input("Do you want to load an existing database (y/n): ").strip().lower()
 
 def get_db_and_table_names():
     db_name = input("Enter the name of the database folder: ").strip()
-    table_name = input("Enter the name of the table you want to load: ").strip()
-    return db_name, table_name
+    
+    # List .pydb files in the database directory
+    files = list_database_files(db_name)
+    if not files:
+        print("There are no files with the .pydb extension in the database directory or check the directory.")
+        pause_and_clean(4)
+        return None, None
+
+    while True:
+        print("Files with the .pydb extension in the database directory:")
+        for file in files:
+            print(file)
+        
+        table_name = input("Enter the name of the table you want to load: ").strip()
+        if f"{table_name}.pydb" in files:
+            return db_name, table_name
+        else:
+            print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
+            pause_and_clean(1)
+
+def list_database_files(db_directory, extension=".pydb"):
+    if not os.path.isdir(db_directory):
+        print(f"Directory '{db_directory}' does not exist.")
+        return []
+
+    try:
+        return [f for f in os.listdir(db_directory) if f.endswith(extension)]
+    except PermissionError:
+        print(f"You do not have permission to access the directory '{db_directory}'.")
+        return []
+    except Exception as e:
+        print(f"An error occurred while listing files: {e}")
+        return []
 
 def load_existing_table(db_name, table_name):
     try:
@@ -46,8 +81,8 @@ def get_next_id(tb1):
         return None
 
 def add_names_to_table(tb1):
-    ID = get_next_id(tb1)
-    if ID is None:
+    id = get_next_id(tb1)
+    if id is None:
         return
 
     while True:
@@ -55,6 +90,7 @@ def add_names_to_table(tb1):
         print(tb1)
         name = input("Enter a name to add to the table (or 'exit' to end): ").strip()
         if name.lower() == 'exit':
+            pause_and_clean(0)
             break
         try:
             tb1 + (id, name)
@@ -81,6 +117,8 @@ def add_names_to_db():
         db_choice = get_db_choice()
         if db_choice == "y":
             db_name, table_name = get_db_and_table_names()
+            if db_name is None or table_name is None:
+                return
             tb1 = load_existing_table(db_name, table_name)
         elif db_choice == "n":
             db_name = input("Enter a name for your DB: ").strip()
