@@ -44,7 +44,7 @@ class KeyManager:
             private_key = key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.NoEncryption()
+                encryption_algorithm=serialization.NoEncryption()  # Consider using BestAvailableEncryption(b"your-password")
             )
             public_key = key.public_key().public_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -56,8 +56,12 @@ class KeyManager:
             with open(self.public_key_file, "wb") as pub_file:
                 pub_file.write(public_key)
             infomessage("Keys generated and saved successfully.")
-        except (IOError, Exception) as e:
-            infomessage(f"Error during key generation: {e}")
+        except IOError as e:
+            infomessage(f"IOError during key generation: {e}")
+            infomessage(trace())
+            raise RuntimeError(f"IOError during key generation: {e}")
+        except Exception as e:
+            infomessage(f"Unexpected error during key generation: {e}")
             infomessage(trace())
             raise RuntimeError(f"Unexpected error during key generation: {e}")
 
@@ -67,19 +71,19 @@ class KeyManager:
             raise FileNotFoundError(f"Public key file '{self.public_key_file}' does not exist.")
         with open(self.public_key_file, "rb") as pub_file:
             return serialization.load_pem_public_key(pub_file.read(), backend=default_backend())
-        
+
     def load_private_key(self):
         """Load the private key from file."""
         if not os.path.exists(self.private_key_file):
             raise FileNotFoundError(f"Private key file '{self.private_key_file}' does not exist.")
         with open(self.private_key_file, "rb") as priv_file:
             return serialization.load_pem_private_key(priv_file.read(), password=None, backend=default_backend())
-        
+
     def verify_key_pair(self):
         """Verify that the public and private key pair match."""
         private_key = self.load_private_key()
         public_key = self.load_public_key()
-        
+
         try:
             test_data = b"test"
             encrypted_data = public_key.encrypt(
@@ -103,21 +107,27 @@ class KeyManager:
         except ValueError as e:
             infomessage(f"Key verification failed: {e}")
             infomessage(trace())
-            raise RuntimeError(f"Unexpected error verifying key pair: {e}")
-    
+            raise RuntimeError(f"Key verification failed: {e}")
+
     def key_checker(self):
         """Check the validity of key files and their pair. Generate keys if missing."""
         try:
             if not (os.path.exists(self.private_key_file) and os.path.exists(self.public_key_file)):
                 infomessage("Key files are missing. Generating new keys...")
                 self.generate_keys()
-            
+
             self.verify_key_pair()
             infomessage("Keys are valid and match.")
-        except Exception as e:
+        except (FileNotFoundError, IOError, ValueError) as e:
             infomessage(trace())
             infomessage(f"Key check failed: {e}")
-            raise RuntimeError(f"Key check failed: {e}")
+            infomessage("Regenerating keys...")
+            self.generate_keys()  # Regenerate keys if validation fails
+            self.verify_key_pair()  # Re-verify after regeneration
+        except Exception as e:
+            infomessage(trace())
+            infomessage(f"Unexpected error during key check: {e}")
+            raise RuntimeError(f"Unexpected error during key check: {e}")
 
 class RSAFileEncryptor:
     def __init__(self, database):
@@ -137,13 +147,15 @@ class RSAFileEncryptor:
         """Encrypt a file using RSA and AES."""
         if not os.path.exists(input_file):
             raise FileNotFoundError(f"The file {input_file} does not exist.")
-        
+        if os.path.getsize(input_file) == 0:
+            raise ValueError(f"The file {input_file} is empty.")
+
         try:
             public_key = self.key_manager.load_public_key()
-            
+
             # Generate a symmetric AES key
             session_key = os.urandom(32)
-            
+
             # Encrypt the session key with RSA
             encrypted_session_key = public_key.encrypt(
                 session_key,
@@ -153,17 +165,17 @@ class RSAFileEncryptor:
                     label=None
                 )
             )
-            
+
             # Encrypt the file data with AES
             with open(input_file, "rb") as f:
                 file_data = f.read()
-            
+
             # AES-GCM
             iv = os.urandom(12)  # Recommended: 96 bits (12 bytes) for GCM
             cipher = Cipher(algorithms.AES(session_key), modes.GCM(iv), backend=default_backend())
             encryptor = cipher.encryptor()
             encrypted_data = encryptor.update(file_data) + encryptor.finalize()
-            
+
             # Save the encrypted session key, IV, tag, and encrypted data
             with open(input_file, "wb") as f:
                 f.write(iv)
@@ -180,17 +192,19 @@ class RSAFileEncryptor:
         """Decrypt a file encrypted using RSA and AES."""
         if not os.path.exists(input_file):
             raise FileNotFoundError(f"The file {input_file} does not exist.")
-        
+        if os.path.getsize(input_file) == 0:
+            raise ValueError(f"The file {input_file} is empty.")
+
         try:
             private_key = self.key_manager.load_private_key()
-            
+
             # Read encrypted session key, IV, tag, and encrypted data
             with open(input_file, "rb") as f:
                 iv = f.read(12)  # 12 bytes for IV in GCM
                 encrypted_session_key = f.read(private_key.key_size // 8)
                 tag = f.read(16)  # 16 bytes for tag in GCM
                 encrypted_data = f.read()
-            
+
             # Decrypt the session key with RSA
             session_key = private_key.decrypt(
                 encrypted_session_key,
@@ -200,12 +214,12 @@ class RSAFileEncryptor:
                     label=None
                 )
             )
-            
+
             # Decrypt the file data with AES-GCM
             cipher = Cipher(algorithms.AES(session_key), modes.GCM(iv, tag), backend=default_backend())
             decryptor = cipher.decryptor()
             decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
-            
+
             # Save the decrypted file data
             with open(input_file, "wb") as f:
                 f.write(decrypted_data)
@@ -224,19 +238,19 @@ if __name__ == "__main__":
     try:
         encryptor.encrypt_file(input_file)  # Encrypt a file
         infomessage("Encryption successful.")
-    except FileNotFoundError:
-        infomessage(f"File error: {FileNotFoundError}")
+    except FileNotFoundError as e:
+        infomessage(f"File error: {e}")
         infomessage(trace())
-    except Exception:
-        infomessage(f"Unexpected error: {Exception}")
+    except Exception as e:
+        infomessage(f"Unexpected error: {e}")
         infomessage(trace())
 
     try:
         encryptor.decrypt_file(input_file)  # Decrypt a file
         infomessage("Decryption successful.")
-    except FileNotFoundError:
-        infomessage(f"File error: {FileNotFoundError}")
+    except FileNotFoundError as e:
+        infomessage(f"File error: {e}")
         infomessage(trace())
-    except Exception:
-        infomessage(f"Unexpected error: {Exception}")
+    except Exception as e:
+        infomessage(f"Unexpected error: {e}")
         infomessage(trace())
