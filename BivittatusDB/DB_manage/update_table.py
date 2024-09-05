@@ -2,7 +2,7 @@ import os
 import BivittatusDB as bdb
 from bdb_aggregate import pause_and_clean
 
-#Please add show() to remove listing on this current module
+# Please add show() to remove listing on this current module
 
 def get_input(prompt, valid_options=None, convert_func=None):
     while True:
@@ -114,6 +114,27 @@ def update_tb():
 
     update_table(tb)
     save_table(tb)
+
+def show(db_directory, extension=".pydb"):
+    if not os.path.isdir(db_directory):
+        print(f"Directory '{db_directory}' does not exist.")
+        return []
+
+    try:
+        files = [f for f in os.listdir(db_directory) if f.endswith(extension)]
+        if files:
+            print("Files with the .pydb extension:")
+            for file in files:
+                print(file)
+        else:
+            print("No .pydb files found.")
+        return files
+    except PermissionError:
+        print(f"You do not have permission to access the directory '{db_directory}'.")
+        return []
+    except Exception as e:
+        print(f"An error occurred while listing files: {e}")
+        return []
 
 if __name__ == "__main__":
     update_tb()

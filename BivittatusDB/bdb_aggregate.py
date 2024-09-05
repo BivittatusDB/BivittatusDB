@@ -159,7 +159,9 @@ def pause_and_clean(duration):
         os.system('clear')
     else:
         raise NotImplementedError(f"The operating system '{system_name}' is not supported for clearing the screen.")
-
 # Example
 #pause_and_clean(2)  
 # Pause for 2 seconds and then wipe the screen.
+
+def delay(duration):
+    time.sleep(duration)

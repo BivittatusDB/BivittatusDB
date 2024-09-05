@@ -1,5 +1,5 @@
 import BivittatusDB as bdb
-from bdb_aggregate import pause_and_clean, show
+from bdb_aggregate import pause_and_clean, show, delay
 
 def use_table():
     db_directory = input("Enter the name of the database directory: ")
@@ -7,9 +7,9 @@ def use_table():
     # Get the list of tables using the show function
     try:
         tables = show(db_directory)
-        print(f"Tables found: {tables}")
     except Exception as e:
         print(f"Error retrieving tables: {e}")
+        delay(1.5)
         return
 
     try:
@@ -48,7 +48,7 @@ def use_table():
 def confirm_exit(tb1):
     while True:
         exit_choice = input("Do you want to exit? (y): ")
-        if exit_choice.lower() == 'y':
+        if exit_choice.strip() is 'y':
             pause_and_clean(0)
             return True
         else:

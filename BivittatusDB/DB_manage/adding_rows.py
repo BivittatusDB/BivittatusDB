@@ -1,34 +1,57 @@
 import os
 import BivittatusDB as bdb
-from bdb_aggregate import pause_and_clean
-
-#Please add show() to remove listing on this current module
+from bdb_aggregate import pause_and_clean, show, delay
 
 def get_db_choice():
-    print("To create a new database input: 'n'")
-    return input("Do you want to load an existing database (y/n): ").strip().lower()
+    while True:
+        print("To create a new database input: 'n'")
+        choice = input("Do you want to load an existing database (y/n): ").strip().lower()
+        if choice in ['y', 'n']:
+            return choice
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+
 
 def get_db_and_table_names():
-    db_name = input("Enter the name of the database folder: ").strip()
+    """
+    Prompts the user to enter the database folder name and table name, and initializes the database.
+
+    Returns:
+        tuple: (db_directory, table_name) if successful, (None, None) otherwise.
+    """
+    db_directory = input("Enter the name of the database folder: ").strip()
     
-    # List .pydb files in the database directory
-    files = list_database_files(db_name)
-    if not files:
-        print("There are no files with the .pydb extension in the database directory or check the directory.")
-        pause_and_clean(4)
+    # Retrieve the list of tables
+    try:
+        tables = show(db_directory)
+    except Exception as e:
+        print(f"Error retrieving tables: {e}")
+        delay(1)
         return None, None
 
+    # Initialize the database
+    try:
+        db = bdb.database(db_directory).use()
+        print("Database initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing the database: {e}")
+        return None, None
+
+    # Prompt user to enter the table name
     while True:
-        print("Files with the .pydb extension in the database directory:")
-        for file in files:
-            print(file)
+        print("Available tables:", ", ".join(tables))
+        table_name = input("Enter the name of the table you want to use (without .pydb extension): ").strip()
         
-        table_name = input("Enter the name of the table you want to load: ").strip()
-        if f"{table_name}.pydb" in files:
-            return db_name, table_name
-        else:
+        if table_name not in tables:
+            pause_and_clean(0)
             print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
-            pause_and_clean(1)
+        else:
+            try:
+                tb1 = db.load_table(table_name)
+                pause_and_clean(2)
+                return db_directory, table_name
+            except Exception as e:
+                print(f"Error loading the table '{table_name}': {e}")
 
 def list_database_files(db_directory, extension=".pydb"):
     if not os.path.isdir(db_directory):
@@ -49,7 +72,7 @@ def load_existing_table(db_name, table_name):
         test_db = bdb.database(db_name).init()
         tb1 = test_db.load_table(table_name)
         print(f"Table '{table_name}' successfully loaded.")
-        pause_and_clean(0.8)
+        delay(1.5)
         return tb1
     except Exception as e:
         print(f"Error loading table: {e}")
@@ -87,6 +110,7 @@ def add_names_to_table(tb1):
 
     while True:
         pause_and_clean(0)
+        print("The current table:")
         print(tb1)
         name = input("Enter a name to add to the table (or 'exit' to end): ").strip()
         if name.lower() == 'exit':
@@ -98,23 +122,15 @@ def add_names_to_table(tb1):
         except Exception as e:
             print(f"Error adding name to table: {e}")
 
-def save_table(tb1):
-    answer = input("Do you want to save this table? (y/n): ").strip().lower()
-    if answer == "y":
-        try:
-            bdb.save(tb1)
-            print("Table saved successfully.")
-            pause_and_clean(0.8)
-        except Exception as e:
-            print(f"Error saving table: {e}")
-    elif answer == "n":
-        print("You chose not to save this table.")
-    else:
-        print("Choose a correct option (y/n).")
-
 def add_names_to_db():
+    """
+    Manages the process of adding names to a database table.
+    Prompts the user to choose between loading an existing database or creating a new one,
+    and then adds names to the selected table.
+    """
     try:
         db_choice = get_db_choice()
+        
         if db_choice == "y":
             db_name, table_name = get_db_and_table_names()
             if db_name is None or table_name is None:
@@ -135,6 +151,21 @@ def add_names_to_db():
             save_table(tb1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
+def save_table(tb1):
+    answer = input("Do you want to save this table? (y/n): ").strip().lower()
+    if answer == "y":
+        try:
+            bdb.save(tb1)
+            print("Table saved successfully.")
+            pause_and_clean(0.8)
+        except Exception as e:
+            print(f"Error saving table: {e}")
+    elif answer == "n":
+        print("You chose not to save this table.")
+        delay(2)
+    else:
+        print("Choose a correct option (y/n).")
 
 if __name__ == "__main__":
     add_names_to_db()

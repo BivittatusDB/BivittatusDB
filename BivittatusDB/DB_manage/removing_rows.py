@@ -1,10 +1,18 @@
 import os
 import BivittatusDB as bdb
-from bdb_aggregate import pause_and_clean
-
-#Please add show() to remove listing on this current module
+from bdb_aggregate import pause_and_clean, show
 
 def get_input(prompt, valid_options=None):
+    """
+    Prompts the user for input and validates it against a list of valid options.
+    
+    Args:
+        prompt (str): The prompt to display to the user.
+        valid_options (list, optional): A list of valid options. Defaults to None.
+    
+    Returns:
+        str: The user's input, stripped and converted to lowercase.
+    """
     while True:
         choice = input(prompt).strip().lower()
         if valid_options and choice not in valid_options:
@@ -13,6 +21,16 @@ def get_input(prompt, valid_options=None):
             return choice
 
 def list_database_files(db_directory, extension=".pydb"):
+    """
+    Lists files with a specific extension in a given directory.
+    
+    Args:
+        db_directory (str): The directory to search for files.
+        extension (str, optional): The file extension to search for. Defaults to ".pydb".
+    
+    Returns:
+        list: A list of filenames with the specified extension.
+    """
     if not os.path.isdir(db_directory):
         print(f"Directory '{db_directory}' does not exist.")
         return []
@@ -27,6 +45,16 @@ def list_database_files(db_directory, extension=".pydb"):
         return []
 
 def initialize_table(db_name, table_name):
+    """
+    Initializes a table from a database.
+    
+    Args:
+        db_name (str): The name of the database.
+        table_name (str): The name of the table to load.
+    
+    Returns:
+        object: The loaded table, or None if an error occurred.
+    """
     try:
         test_db = bdb.database(db_name).init()
         tb1 = test_db.load_table(table_name)
@@ -38,6 +66,12 @@ def initialize_table(db_name, table_name):
         return None
 
 def remove_rows_from_table(tb1):
+    """
+    Removes rows from a table based on user input.
+    
+    Args:
+        tb1 (object): The table from which to remove rows.
+    """
     while True:
         pause_and_clean(0)
         print(tb1)
@@ -55,6 +89,12 @@ def remove_rows_from_table(tb1):
             print(f"Error when deleting rows: {e}")
 
 def save_table(tb1):
+    """
+    Prompts the user to save the table and saves it if the user chooses to.
+    
+    Args:
+        tb1 (object): The table to save.
+    """
     answer = get_input("Do you want to save this table (y/n)? ", ["y", "n"])
     if answer == "y":
         try:
@@ -69,6 +109,11 @@ def save_table(tb1):
         pause_and_clean(1)
 
 def remove_rows():
+    """
+    Manages the process of removing rows from a database table.
+    Prompts the user to choose between loading an existing database or creating a new one,
+    and then removes rows from the selected table.
+    """
     print("Input 'n' to get back to the main menu")
     db_choice = get_input("Do you want to load an existing database (y/n): ", ["y", "n"])
     if db_choice == "y":
