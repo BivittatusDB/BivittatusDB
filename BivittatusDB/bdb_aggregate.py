@@ -5,6 +5,7 @@ try:
     import os
     import platform
     import time
+    import encrypt
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -165,3 +166,9 @@ def pause_and_clean(duration):
 
 def delay(duration):
     time.sleep(duration)
+
+
+#used for sharing tables
+class Share(encrypt.KeyTransition):
+    def __init__(self, database:str) -> None:
+        super().__init__(database)

@@ -20,6 +20,7 @@ class table(metaclass=TableMeta):
         self.database=database
         self.table_name=table_name
         self.temp=temp
+        self.seeker=0
         self.data = None  
         if self.temp==False:
             self.__read__()

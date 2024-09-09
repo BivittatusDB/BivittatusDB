@@ -65,19 +65,32 @@ class KeyManager:
             infomessage(trace())
             raise RuntimeError(f"Unexpected error during key generation: {e}")
 
-    def load_public_key(self):
+    def load_public_key(self, pub_key:str=None):
         """Load the public key from file."""
-        if not os.path.exists(self.public_key_file):
-            raise FileNotFoundError(f"Public key file '{self.public_key_file}' does not exist.")
-        with open(self.public_key_file, "rb") as pub_file:
-            return serialization.load_pem_public_key(pub_file.read(), backend=default_backend())
+        if pub_key==None:
+            if not os.path.exists(self.public_key_file):
+                raise FileNotFoundError(f"Public key file '{self.public_key_file}' does not exist.")
+            with open(self.public_key_file, "rb") as pub_file:
+                return serialization.load_pem_public_key(pub_file.read(), backend=default_backend())
+        else:
+            if not os.path.exists(pub_key):
+                raise FileNotFoundError(f"Public key file '{pub_key}' does not exist.")
+            with open(pub_key, "rb") as pub_file:
+                return serialization.load_pem_public_key(pub_file.read(), backend=default_backend())
 
-    def load_private_key(self):
+
+    def load_private_key(self, priv_key:str=None):
         """Load the private key from file."""
-        if not os.path.exists(self.private_key_file):
-            raise FileNotFoundError(f"Private key file '{self.private_key_file}' does not exist.")
-        with open(self.private_key_file, "rb") as priv_file:
-            return serialization.load_pem_private_key(priv_file.read(), password=None, backend=default_backend())
+        if priv_key==None:
+            if not os.path.exists(self.private_key_file):
+                raise FileNotFoundError(f"Private key file '{self.private_key_file}' does not exist.")
+            with open(self.private_key_file, "rb") as priv_file:
+                return serialization.load_pem_private_key(priv_file.read(), password=None, backend=default_backend())
+        else:
+            if not os.path.exists(priv_key):
+                raise FileNotFoundError(f"Private key file '{priv_key}' does not exist.")
+            with open(priv_key, "rb") as priv_file:
+                return serialization.load_pem_private_key(priv_file.read(), password=None, backend=default_backend())
 
     def verify_key_pair(self):
         """Verify that the public and private key pair match."""
@@ -140,13 +153,15 @@ class RSAFileEncryptor:
         :param database: Path to the directory where keys are stored.
         """
         self.key_manager = KeyManager(database)
+        self.public_key = self.key_manager.load_public_key()
+        self.private_key = self.key_manager.load_private_key()
         self.database = database
 
     def generate_keys(self):
         """Delegate key generation to KeyManager."""
         self.key_manager.generate_keys()
 
-    def encrypt_file(self, input_file):
+    def encrypt_file(self, input_file, output_file:str=None):
         """Encrypt a file using RSA and AES."""
         if not os.path.exists(input_file):
             raise FileNotFoundError(f"The file {input_file} does not exist.")
@@ -154,13 +169,11 @@ class RSAFileEncryptor:
             raise ValueError(f"The file {input_file} is empty.")
 
         try:
-            public_key = self.key_manager.load_public_key()
-
             # Generate a symmetric AES key
             session_key = os.urandom(32)
 
             # Encrypt the session key with RSA
-            encrypted_session_key = public_key.encrypt(
+            encrypted_session_key = self.public_key.encrypt(
                 session_key,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -177,9 +190,9 @@ class RSAFileEncryptor:
             cipher = Cipher(algorithms.AES(session_key), modes.GCM(iv), backend=default_backend())
             encryptor = cipher.encryptor()
             encrypted_data = encryptor.update(file_data) + encryptor.finalize()
-
+            output_file = output_file or input_file
             # Save the encrypted session key, IV, tag, and encrypted data
-            with open(input_file, "wb") as f:
+            with open(output_file, "wb") as f:
                 f.write(iv)
                 f.write(encrypted_session_key)
                 f.write(encryptor.tag)  # GCM tag for authentication
@@ -202,17 +215,17 @@ class RSAFileEncryptor:
             raise ValueError(f"The file {input_file} is empty.")
 
         try:
-            private_key = self.key_manager.load_private_key()
+
 
             # Read encrypted session key, IV, tag, and encrypted data
             with open(input_file, "rb") as f:
                 iv = f.read(12)  # 12 bytes for IV in GCM
-                encrypted_session_key = f.read(private_key.key_size // 8)
+                encrypted_session_key = f.read(self.private_key.key_size // 8)
                 tag = f.read(16)  # 16 bytes for tag in GCM
                 encrypted_data = f.read()
 
             # Decrypt the session key with RSA
-            session_key = private_key.decrypt(
+            session_key = self.private_key.decrypt(
                 encrypted_session_key,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -267,3 +280,45 @@ if __name__ == "__main__":
     except Exception as e:
         infomessage(f"Unexpected error during decryption: {e}")
         infomessage(trace())
+
+
+class KeyTransition:
+    def __init__(self, database:str) -> None:
+        self.path=database
+        self.rsa=RSAFileEncryptor(self.path)
+
+    def __copy_pubKey__(self):
+        with open(f"{self.path}/private.pem", "rb") as original:
+            with open(f"{self.path}/key.priv", "wb") as copy:
+                copy.write(original.read())
+
+    def ReKey(self, regen:bool=False):
+        #used to generate new keys for a database
+        if regen==True:
+            self.__copy_pubKey__()
+            self.rsa.generate_keys()
+            self.priv_key=f"{self.path}/key.priv"
+            self.rsa.private_key=self.rsa.key_manager.load_private_key(self.priv_key)
+            self.rsa.public_key=self.rsa.key_manager.load_public_key()
+        for file in os.listdir(self.path):
+            if ".pydb" in file:
+                self.rsa.decrypt_file(self.path+"/"+file)
+                self.rsa.encrypt_file(self.path+"/"+file)
+        self.rsa.private_key=self.rsa.key_manager.load_private_key()
+    
+    def export_table(self, table_name:str, export_key:str):
+        "re-encrypt a table with a given public key, so that you don't need to share your private key"
+        self.rsa.public_key=self.rsa.key_manager.load_public_key(export_key)
+        self.rsa.decrypt_file(f"{self.path}/{table_name}.pydb")
+        os.makedirs(f"{self.path}_export", exist_ok=True)
+        self.rsa.encrypt_file(f"{self.path}/{table_name}.pydb", f"{self.path}_export/{table_name}.pydb")
+        self.rsa.public_key=self.rsa.key_manager.load_public_key()
+        self.rsa.encrypt_file(f"{self.path}/{table_name}.pydb")
+
+    def import_table(self, table_path:str, import_key:str):
+        'import a table that has been shared with you via Share.export_table, if you are the private key holder'
+        _, filename = os.path.split(table_path)
+        self.rsa.private_key=self.rsa.key_manager.load_private_key(import_key)
+        self.rsa.decrypt_file(table_path)
+        self.rsa.encrypt_file(table_path, f"{self.path}/{filename}")
+        self.rsa.private_key=self.rsa.key_manager.load_private_key()
