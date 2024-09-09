@@ -1,48 +1,9 @@
-import os
 import BivittatusDB as bdb
-from bdb_aggregate import pause_and_clean, show
-
-def get_input(prompt, valid_options=None):
-    """
-    Prompts the user for input and validates it against a list of valid options.
-    
-    Args:
-        prompt (str): The prompt to display to the user.
-        valid_options (list, optional): A list of valid options. Defaults to None.
-    
-    Returns:
-        str: The user's input, stripped and converted to lowercase.
-    """
-    while True:
-        choice = input(prompt).strip().lower()
-        if valid_options and choice not in valid_options:
-            print("Invalid choice. Try again.")
-        else:
-            return choice
-
-def list_database_files(db_directory, extension=".pydb"):
-    """
-    Lists files with a specific extension in a given directory.
-    
-    Args:
-        db_directory (str): The directory to search for files.
-        extension (str, optional): The file extension to search for. Defaults to ".pydb".
-    
-    Returns:
-        list: A list of filenames with the specified extension.
-    """
-    if not os.path.isdir(db_directory):
-        print(f"Directory '{db_directory}' does not exist.")
-        return []
-
-    try:
-        return [f for f in os.listdir(db_directory) if f.endswith(extension)]
-    except PermissionError:
-        print(f"You do not have permission to access the directory '{db_directory}'.")
-        return []
-    except Exception as e:
-        print(f"An error occurred while listing files: {e}")
-        return []
+from DB_manage.funtions.common.user_interaction_common import get_db_choice_common
+from DB_manage.funtions.common.list_dir_pydb import list_pydb
+from DB_manage.funtions.adding.db_utils import load_existing_table
+from DB_manage.funtions.common.saving import save_table
+from bdb_aggregate import pause_and_clean
 
 def initialize_table(db_name, table_name):
     """
@@ -88,56 +49,22 @@ def remove_rows_from_table(tb1):
         except Exception as e:
             print(f"Error when deleting rows: {e}")
 
-def save_table(tb1):
-    """
-    Prompts the user to save the table and saves it if the user chooses to.
-    
-    Args:
-        tb1 (object): The table to save.
-    """
-    answer = get_input("Do you want to save this table (y/n)? ", ["y", "n"])
-    if answer == "y":
-        try:
-            bdb.save(tb1)
-            print("Table successfully saved.")
-            pause_and_clean(0.8)
-        except Exception as e:
-            print(f"Error saving the table: {e}")
-            pause_and_clean(0.8)
-    else:
-        print("You have chosen not to save the table.")
-        pause_and_clean(1)
-
 def remove_rows():
-    """
-    Manages the process of removing rows from a database table.
-    Prompts the user to choose between loading an existing database or creating a new one,
-    and then removes rows from the selected table.
-    """
-    print("Input 'n' to get back to the main menu")
-    db_choice = get_input("Do you want to load an existing database (y/n): ", ["y", "n"])
-    if db_choice == "y":
-        db_name = input("Enter the name of the database directory: ").strip()
-        
-        # List .pydb files in the database directory
-        files = list_database_files(db_name)
-        if not files:
-            print("There are no files with the .pydb extension in the database directory.")
-            pause_and_clean(2)
+    # Get the user's choice (load existing DB or create a new one)
+        db_choice = get_db_choice_common()
+
+        if db_choice == "y":
+            # Load existing DB and table
+            db_name, table_name = list_pydb()
+            if db_name is None or table_name is None:
+                return
+            tb1 = load_existing_table(db_name, table_name)
+        elif db_choice == "n":
+            #return to menu
+            pass
+        else:
+            print("Invalid choice. Exiting.")
             return
-
-        while True:
-            print("Files with the .pydb extension in the database directory:")
-            for file in files:
-                print(file)
-
-            table_name = input("Enter the name of the table you want to load: ").strip()
-            if f"{table_name}.pydb" in files:
-                break
-            else:
-                print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
-                pause_and_clean(1)
-
         tb1 = initialize_table(db_name, table_name)
         if tb1 is None:
             return

@@ -1,6 +1,5 @@
 import os
 import BivittatusDB as bdb
-from bdb_aggregate import delay
 
 def list_database_files(db_directory, extension=".pydb"):
     if not os.path.isdir(db_directory):

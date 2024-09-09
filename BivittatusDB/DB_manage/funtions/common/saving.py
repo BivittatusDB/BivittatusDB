@@ -1,5 +1,5 @@
 import BivittatusDB as bdb
-from bdb_aggregate import delay, pause_and_clean
+from bdb_aggregate import delay
 
 def save_table(tb1):
     answer = input("Do you want to save this table? (y/n): ").strip().lower()
