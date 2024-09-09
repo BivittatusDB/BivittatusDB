@@ -59,9 +59,6 @@ def remove_rows():
             if db_name is None or table_name is None:
                 return
             tb1 = load_existing_table(db_name, table_name)
-        elif db_choice == "n":
-            #return to menu
-            pass
         else:
             print("Invalid choice. Exiting.")
             return

@@ -44,7 +44,7 @@ class KeyManager:
             private_key = key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.NoEncryption()  # Consider using BestAvailableEncryption(b"your-password")
+                encryption_algorithm=serialization.NoEncryption()  # Optional: Use BestAvailableEncryption(b"your-password")
             )
             public_key = key.public_key().public_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -104,10 +104,14 @@ class KeyManager:
             )
             if decrypted_data != test_data:
                 raise ValueError("Public and private keys do not match.")
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             infomessage(f"Key verification failed: {e}")
             infomessage(trace())
             raise RuntimeError(f"Key verification failed: {e}")
+        except Exception as e:
+            infomessage(f"Unexpected error during key verification: {e}")
+            infomessage(trace())
+            raise RuntimeError(f"Unexpected error during key verification: {e}")
 
     def key_checker(self):
         """Check the validity of key files and their pair. Generate keys if missing."""
@@ -115,10 +119,9 @@ class KeyManager:
             if not (os.path.exists(self.private_key_file) and os.path.exists(self.public_key_file)):
                 infomessage("Key files are missing. Generating new keys...")
                 self.generate_keys()
-
             self.verify_key_pair()
             infomessage("Keys are valid and match.")
-        except (FileNotFoundError, IOError, ValueError) as e:
+        except (FileNotFoundError, IOError, ValueError, TypeError) as e:
             infomessage(trace())
             infomessage(f"Key check failed: {e}")
             infomessage("Regenerating keys...")
@@ -166,11 +169,10 @@ class RSAFileEncryptor:
                 )
             )
 
-            # Encrypt the file data with AES
+            # Encrypt the file data with AES-GCM
             with open(input_file, "rb") as f:
                 file_data = f.read()
 
-            # AES-GCM
             iv = os.urandom(12)  # Recommended: 96 bits (12 bytes) for GCM
             cipher = Cipher(algorithms.AES(session_key), modes.GCM(iv), backend=default_backend())
             encryptor = cipher.encryptor()
@@ -187,6 +189,10 @@ class RSAFileEncryptor:
             infomessage(f"Error during file encryption: {e}")
             infomessage(trace())
             raise RuntimeError(f"Error during file encryption: {e}")
+        except Exception as e:
+            infomessage(f"Unexpected error during file encryption: {e}")
+            infomessage(trace())
+            raise RuntimeError(f"Unexpected error during file encryption: {e}")
 
     def decrypt_file(self, input_file):
         """Decrypt a file encrypted using RSA and AES."""
@@ -220,7 +226,7 @@ class RSAFileEncryptor:
             decryptor = cipher.decryptor()
             decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
 
-            # Save the decrypted file data
+            # Save the decrypted data back to the file
             with open(input_file, "wb") as f:
                 f.write(decrypted_data)
             infomessage("File decrypted successfully.")
@@ -228,6 +234,10 @@ class RSAFileEncryptor:
             infomessage(f"Error during file decryption: {e}")
             infomessage(trace())
             raise RuntimeError(f"Error during file decryption: {e}")
+        except Exception as e:
+            infomessage(f"Unexpected error during file decryption: {e}")
+            infomessage(trace())
+            raise RuntimeError(f"Unexpected error during file decryption: {e}")
 
 # Example usage
 if __name__ == "__main__":
@@ -235,22 +245,25 @@ if __name__ == "__main__":
     input_file = os.path.join(database, "public.pem")
 
     encryptor = RSAFileEncryptor(database)
+
+    # Encryption
     try:
-        encryptor.encrypt_file(input_file)  # Encrypt a file
-        infomessage("Encryption successful.")
+        encryptor.encrypt_file(input_file)
+        infomessage("File encrypted successfully.")
     except FileNotFoundError as e:
-        infomessage(f"File error: {e}")
+        infomessage(f"Encryption failed: {e}")
         infomessage(trace())
     except Exception as e:
-        infomessage(f"Unexpected error: {e}")
+        infomessage(f"Unexpected error during encryption: {e}")
         infomessage(trace())
 
+    # Decryption
     try:
-        encryptor.decrypt_file(input_file)  # Decrypt a file
-        infomessage("Decryption successful.")
+        encryptor.decrypt_file(input_file)
+        infomessage("File decrypted successfully.")
     except FileNotFoundError as e:
-        infomessage(f"File error: {e}")
+        infomessage(f"Decryption failed: {e}")
         infomessage(trace())
     except Exception as e:
-        infomessage(f"Unexpected error: {e}")
+        infomessage(f"Unexpected error during decryption: {e}")
         infomessage(trace())
