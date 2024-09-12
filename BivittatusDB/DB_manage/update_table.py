@@ -1,5 +1,6 @@
 import os
 import BivittatusDB as bdb
+from DB_manage.funtions.common.saving import save_table
 from bdb_aggregate import pause_and_clean
 
 # Please add show() to remove listing on this current module
@@ -67,19 +68,6 @@ def update_table(tb):
         except Exception as e:
             print(f"Error updating table: {e}")
             pause_and_clean(0.8)
-
-def save_table(tb):
-    answer = get_input("Do you want to save the table? (y/n): ", ["y", "n"])
-    if answer == "y":
-        try:
-            bdb.save(tb)
-            print("Table saved successfully.")
-            pause_and_clean(0.8)
-        except Exception as e:
-            print(f"Error saving the table: {e}")
-            pause_and_clean(0.8)
-    else:
-        print("You chose not to save this table.")
 
 def update_tb():
     current_db = input("Enter the database you are going to use: ").strip()

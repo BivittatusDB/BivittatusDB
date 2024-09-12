@@ -1,5 +1,4 @@
 from bdb_aggregate import delay
-from DB_manage.funtions.common.list_dir_pydb import list_pydb
 
 def get_db_choice_common():
     """
