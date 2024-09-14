@@ -4,6 +4,7 @@ try:
     from BDB_tb import *
     from BDB_io import Handler
     from bdb_foreign import ForeignKey
+    from encrypt import KeyTransition
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -51,3 +52,8 @@ class database:
                 FKey=ForeignKey(*foreign)
                 fmeta[1]=(repr(FKey), fmeta[0]=="Refrenced By")
         return self.load_table(name)
+    
+#used for sharing tables
+class Share(KeyTransition):
+    def __init__(self, database:str) -> None:
+        super().__init__(database)
