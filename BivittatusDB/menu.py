@@ -1,4 +1,5 @@
-from DB_manage import removing_rows
+
+from DB_manage.removing_rows import remove_rows
 from DB_manage.update_table import update_tb
 from DB_manage.adding_rows import add_names_to_db
 from DB_manage.table_view import use_table
@@ -32,7 +33,7 @@ def execute_option(option):
             add_names_to_db()
         elif option == "3":
             pause_and_clean(0)
-            removing_rows()
+            remove_rows()
         elif option == "4":
             pause_and_clean(0)
             update_tb()

@@ -17,10 +17,11 @@ def initialize_table(db_name, table_name):
         object: The loaded table, or None if an error occurred.
     """
     try:
+        # Initialize the database
         test_db = bdb.database(db_name).init()
+        # Load the table from the initialized database
         tb1 = test_db.load_table(table_name)
         print(f"Table '{table_name}' successfully loaded.")
-        print(tb1)
         return tb1
     except Exception as e:
         print(f"Error loading table: {e}")
@@ -50,26 +51,40 @@ def remove_rows_from_table(tb1):
             print(f"Error when deleting rows: {e}")
 
 def remove_rows():
+    """
+    Handles the process of selecting a database and table, removing rows, and saving the table.
+    """
     # Get the user's choice (load existing DB or create a new one)
-        db_choice = get_db_choice_common()
+    db_choice = get_db_choice_common()
 
-        if db_choice == "y":
-            # Load existing DB and table
-            db_name, table_name = list_pydb()
-            if db_name is None or table_name is None:
-                return
-            tb1 = load_existing_table(db_name, table_name)
-        else:
-            print("Invalid choice. Exiting.")
+    if db_choice == "y":
+        # Load existing DB and table
+        db_name, table_name = list_pydb()
+        if db_name is None or table_name is None:
+            print("Error: No valid database or table selected.")
             return
+        
+        # Load the existing table
+        tb1 = load_existing_table(db_name, table_name)
+        if tb1 is None:
+            print("Error: Table could not be loaded.")
+            return
+        
+    else:
+        print("Invalid choice. Exiting.")
+        return
+
+    # Initialize the table (if not already loaded)
+    if tb1 is None:
         tb1 = initialize_table(db_name, table_name)
         if tb1 is None:
+            print("Error: Table could not be initialized.")
             return
 
-        remove_rows_from_table(tb1)
-        print("Final table result:")
-        print(tb1)
-        save_table(tb1)
+    remove_rows_from_table(tb1)
+    print("Final table result:")
+    print(tb1)
+    save_table(tb1)
 
 if __name__ == "__main__":
     remove_rows()
