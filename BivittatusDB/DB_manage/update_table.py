@@ -1,9 +1,6 @@
-import os
 import BivittatusDB as bdb
 from DB_manage.funtions.common.saving import save_table
-from bdb_aggregate import pause_and_clean
-
-# Please add show() to remove listing on this current module
+from bdb_aggregate import pause_and_clean, delay, show
 
 def get_input(prompt, valid_options=None, convert_func=None):
     while True:
@@ -12,43 +9,29 @@ def get_input(prompt, valid_options=None, convert_func=None):
             return 'exit'
         if valid_options and user_input not in valid_options:
             print(f"Invalid input. Please enter one of the following: {', '.join(valid_options)}")
-            continue
-        if convert_func:
-            try:
-                user_input = convert_func(user_input)
-            except ValueError:
-                print(f"Invalid input. Please enter a valid {convert_func.__name__}.")
-                continue
-        return user_input
-
-def list_database_files(db_directory, extension=".pydb"):
-    if not os.path.isdir(db_directory):
-        print(f"Directory '{db_directory}' does not exist.")
-        return []
-
-    try:
-        return [f for f in os.listdir(db_directory) if f.endswith(extension)]
-    except PermissionError:
-        print(f"You do not have permission to access the directory '{db_directory}'.")
-        return []
-    except Exception as e:
-        print(f"An error occurred while listing files: {e}")
-        return []
+        else:
+            if convert_func:
+                try:
+                    user_input = convert_func(user_input)
+                except ValueError:
+                    print(f"Invalid input. Please enter a valid {convert_func.__name__}.")
+                    continue
+            return user_input
 
 def initialize_table(db_name, table_name):
     try:
-        update_db = bdb.database(db_name).init()
-        tb = update_db.load_table(table_name)
+        db = bdb.database(db_name).init()
+        table = db.load_table(table_name)
         print(f"Table '{table_name}' successfully loaded.")
-        return tb
+        return table
     except Exception as e:
         print(f"Error loading table: {e}")
         return None
 
-def update_table(tb):
+def update_table(table):
     while True:
         pause_and_clean(0)
-        print(tb)  # Ensure the table is printed here
+        print(table)
         id_to_update = get_input("Enter the id of the row you want to update or type 'exit' to stop: ", convert_func=int)
         if id_to_update == 'exit':
             print("Exiting data entry.")
@@ -60,69 +43,81 @@ def update_table(tb):
             break
 
         try:
-            tb["name"] = (new_name, tb["id"] == id_to_update)
+            table["name"] = (new_name, table["id"] == id_to_update)
             pause_and_clean(0)
             print("Updated table:")
-            print(tb)
+            print(table)
             pause_and_clean(1.2)
         except Exception as e:
             print(f"Error updating table: {e}")
             pause_and_clean(0.8)
 
-def update_tb():
-    current_db = input("Enter the database you are going to use: ").strip()
-
-    if not os.path.isdir(current_db):
-        print(f"Error: The database directory '{current_db}' does not exist.")
-        pause_and_clean(1)
-        return
-
-    # List .pydb files in the database directory
-    files = list_database_files(current_db)
-    if not files:
-        print("There are no files with the .pydb extension in the database directory.")
-        pause_and_clean(1)
-        return
-
+def list_pydb():
+    """
+    Prompts the user to enter the database folder name and table name, and initializes the database.
+    
+    Returns:
+        tuple: (db_directory, table_name) if successful, (None, None) if canceled or if an error occurs.
+    """
     while True:
-        print("Files with the .pydb extension in the database directory:")
-        for file in files:
-            print(file)
-        
-        current_tb = input("Enter the table you are going to use: ").strip()
-        if f"{current_tb}.pydb" in files:
-            break
-        else:
-            print(f"Table '{current_tb}' not found. Please enter a valid table name from the list above.")
-            pause_and_clean(1)
+        db_directory = input("Enter the name of the database folder (or 'n' to cancel): ").strip()
 
-    tb = initialize_table(current_db, current_tb)
-    if tb is None:
-        return
+        if db_directory.lower() == 'n':
+            print("Operation canceled.")
+            delay(0.8)
+            return None, None
 
-    update_table(tb)
-    save_table(tb)
-
-def show(db_directory, extension=".pydb"):
-    if not os.path.isdir(db_directory):
-        print(f"Directory '{db_directory}' does not exist.")
-        return []
+        try:
+            # Attempt to display the tables in the directory
+            tables = show(db_directory)
+            if not tables:
+                print(f"No tables found in directory '{db_directory}'.")
+                return None, None
+            break  # Exit loop if successful
+        except Exception as e:
+            print(f"Error retrieving tables from directory '{db_directory}': {e}")
+            delay(1)
+            continue  # Retry instead of returning None immediately
 
     try:
-        files = [f for f in os.listdir(db_directory) if f.endswith(extension)]
-        if files:
-            print("Files with the .pydb extension:")
-            for file in files:
-                print(file)
-        else:
-            print("No .pydb files found.")
-        return files
-    except PermissionError:
-        print(f"You do not have permission to access the directory '{db_directory}'.")
-        return []
+        # Initialize the database
+        db = bdb.database(db_directory).use()
+        print("Database initialized successfully.")
     except Exception as e:
-        print(f"An error occurred while listing files: {e}")
-        return []
+        print(f"Error initializing the database: {e}")
+        return None, None
+
+    while True:
+        print("Available tables:", ", ".join(tables))
+        table_name = input("Enter the name of the table you want to use (without .pydb extension): ").strip()
+
+        if table_name not in tables:
+            pause_and_clean(0)
+            print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
+        else:
+            try:
+                # Load the selected table
+                tb1 = db.load_table(table_name)
+                print(f"Table '{table_name}' loaded successfully.")
+                return db_directory, table_name
+            except Exception as e:
+                print(f"Error loading the table '{table_name}': {e}")
+                return None, None
+
+def update_tb():
+    # Use list_pydb to select the database and table
+    db_directory, table_name = list_pydb()
+    
+    if db_directory is None or table_name is None:
+        return  # Exit if the user cancels or an error occurs
+
+    # Initialize and update the selected table
+    table = initialize_table(db_directory, table_name)
+    if table is None:
+        return
+
+    update_table(table)
+    save_table(table)
 
 if __name__ == "__main__":
     update_tb()
