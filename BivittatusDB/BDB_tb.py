@@ -472,7 +472,7 @@ class table(metaclass=TableMeta):
         return self.seeker
     
     def seekable(self)->bool:
-        return (not self.seeker==-1) and self.io.writable
+        return (not self.seeker!=1) and self.io.writable
         #if the table is no longer seekable, set seeker to -1
     
     def readable(self)->bool:
@@ -509,10 +509,11 @@ class table(metaclass=TableMeta):
     def isatty(self)->bool:
         return hasattr(self.logger, "fd") #if a file descriptor exists, it is connected to a terminal
     
-    def fileno(self)->int:
+    def fileno(self) -> int | None:
         if hasattr(self.logger, "fd"):
             return self.logger.fd
         return None
+
 
 
 class SAVEPOINT(metaclass=SavepointMeta):
