@@ -1,6 +1,5 @@
 import BivittatusDB as bdb
-from DB_manage.funtions.common.user_interaction_common import get_db_choice_common
-from DB_manage.funtions.common.list_dir_pydb import list_pydb
+from DB_manage.metadata import get_db_choice_common, list_pydb
 from DB_manage.funtions.adding.db_utils import load_existing_table
 from DB_manage.funtions.common.saving import save_table
 from bdb_aggregate import pause_and_clean
