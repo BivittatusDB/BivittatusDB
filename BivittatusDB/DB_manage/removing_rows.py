@@ -1,31 +1,45 @@
 import BivittatusDB as bdb
+from DB_manage.funtions.common.user_interaction_common import get_db_choice_common
+from DB_manage.funtions.common.list_dir_pydb import list_pydb
+from DB_manage.funtions.adding.db_utils import load_existing_table
+from DB_manage.funtions.common.saving import save_table
 from bdb_aggregate import pause_and_clean
 
-def get_input(prompt, valid_options=None):
-    while True:
-        choice = input(prompt).strip().lower()
-        if valid_options and choice not in valid_options:
-            print("Invalid choice. Try again.")
-        else:
-            return choice
-
 def initialize_table(db_name, table_name):
+    """
+    Initializes a table from a database.
+    
+    Args:
+        db_name (str): The name of the database.
+        table_name (str): The name of the table to load.
+    
+    Returns:
+        object: The loaded table, or None if an error occurred.
+    """
     try:
+        # Initialize the database
         test_db = bdb.database(db_name).init()
+        # Load the table from the initialized database
         tb1 = test_db.load_table(table_name)
         print(f"Table '{table_name}' successfully loaded.")
-        print(tb1)
         return tb1
     except Exception as e:
         print(f"Error loading table: {e}")
         return None
 
 def remove_rows_from_table(tb1):
+    """
+    Removes rows from a table based on user input.
+    
+    Args:
+        tb1 (object): The table from which to remove rows.
+    """
     while True:
         pause_and_clean(0)
         print(tb1)
         value_to_delete = input("Enter the value you wish to delete in the 'name' column (or 'exit' to exit): ").strip()
         if value_to_delete.lower() == 'exit':
+            pause_and_clean(0)
             break
 
         try:
@@ -36,33 +50,37 @@ def remove_rows_from_table(tb1):
         except Exception as e:
             print(f"Error when deleting rows: {e}")
 
-def save_table(tb1):
-    answer = get_input("Do you want to save this table (y/n)? ", ["y", "n"])
-    if answer == "y":
-        try:
-            bdb.save(tb1)
-            print("Table successfully saved.")
-            pause_and_clean(0.8)
-        except Exception as e:
-            print(f"Error saving the table: {e}")
-            pause_and_clean(0.8)
-    else:
-        print("You have chosen not to save the table.")
-
 def remove_rows():
-    db_choice = get_input("Do you want to load an existing database (y/n): ", ["y", "n"])
-    if db_choice == "y":
-        db_name = input("Enter the name of the database directory: ").strip()
-        table_name = input("Enter the name of the table you want to load: ").strip()
+    """
+    Handles the process of selecting a database and table, removing rows, and saving the table.
+    """
+    # Get the user's choice (load existing DB or create a new one)
+    db_choice = get_db_choice_common()
 
-        tb1 = initialize_table(db_name, table_name)
+    if db_choice == "y":
+        # Load existing DB and table
+        db_name, table_name = list_pydb()
+        if db_name is None or table_name is None:
+            print("Error: No valid database or table selected.")
+            return
+        
+        # Load the existing table
+        tb1 = load_existing_table(db_name, table_name)
         if tb1 is None:
+            print("Error: Table could not be loaded.")
             return
 
-        remove_rows_from_table(tb1)
-        print("Final table result:")
-        print(tb1)
-        save_table(tb1)
+    # Initialize the table (if not already loaded)
+    if tb1 is None:
+        tb1 = initialize_table(db_name, table_name)
+        if tb1 is None:
+            print("Error: Table could not be initialized.")
+            return
+
+    remove_rows_from_table(tb1)
+    print("Final table result:")
+    print(tb1)
+    save_table(tb1)
 
 if __name__ == "__main__":
     remove_rows()

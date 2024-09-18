@@ -30,6 +30,27 @@ def drop(database:str):
     except:
         raise metaclass.BDBException.DeletionError("Could not drop database {database}")
 
+def show(database: str):
+    if not os.path.isdir(database):
+        print(f"Directory '{database}' does not exist.")
+        return []
+
+    try:
+        files = os.listdir(database)
+        tables = [file[:-5] for file in files if file.endswith(".pydb")]
+        return tables
+    except PermissionError:
+        print(f"You do not have permission to access the directory '{database}'.")
+        return []
+    except Exception as e:
+        print(f"An error occurred while listing files: {e}")
+        return []
+
+#File seeking variables
+FBEGIN = 0
+FCURRENT=1
+FEND = 2
+
 #True and False commands for auto commit
 ON=True
 OFF=False
@@ -138,7 +159,9 @@ def pause_and_clean(duration):
         os.system('clear')
     else:
         raise NotImplementedError(f"The operating system '{system_name}' is not supported for clearing the screen.")
-
 # Example
 #pause_and_clean(2)  
 # Pause for 2 seconds and then wipe the screen.
+
+def delay(duration):
+    time.sleep(duration)

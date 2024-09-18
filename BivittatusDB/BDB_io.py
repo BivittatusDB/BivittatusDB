@@ -74,6 +74,7 @@ class _CHANDLE:
 # Main Handler class
 class Handler:
     def __init__(self, database_name: str, encrypted: bool = False) -> None:
+        self.writable=False
         self.CHANDLE = _CHANDLE()
         self.encryptor = RSAFileEncryptor(database_name)
         self.key_manager = KeyManager(database_name)
@@ -94,6 +95,7 @@ class Handler:
         """Prepare the database for use by removing security if encryption is enabled."""
         if self.encrypted:
             self.remove_secure()
+        self.writable=True
         return self
 
     def secure(self):

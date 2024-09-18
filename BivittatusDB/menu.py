@@ -1,5 +1,6 @@
-from DB_manage.update_table import update_tb
+
 from DB_manage.removing_rows import remove_rows
+from DB_manage.update_table import update_tb
 from DB_manage.adding_rows import add_names_to_db
 from DB_manage.table_view import use_table
 from DB_manage.metadata import print_metadata

@@ -2,8 +2,8 @@ import metaclass
 from traceback import format_exc as trace
 try:     
     import datetime, BDB_metadata
-    from bdb_aggregate import infomessage
-    from encrypt import KeyManager
+    from BDB_io import Handler
+    from tty_log import logger
     from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
     from bdb_foreign import ForeignKey, json
     from ast import literal_eval
@@ -13,18 +13,38 @@ except:
 class table(metaclass=TableMeta): ...
 
 class table(metaclass=TableMeta):
-    def __init__(self, handler:KeyManager, database, table_name, temp:bool=False, temp_data:list=None) -> table:
+    def __init__(self, handler:Handler, database, table_name, temp:bool=False, temp_data:list=None) -> table:
         self.io=handler
         self.autocommit=False
         self.database=database
         self.table_name=table_name
         self.temp=temp
+        self.seeker=0
         self.data = None  
         if self.temp==False:
             self.__read__()
         else:
             self.data=temp_data
             self.columns=self.data.pop(0)
+        self.logger=logger(f"{database}/{table_name}")
+
+    def log(self):
+        self.logger.start()
+
+    def stop_log(self):
+        if hasattr(self.logger, "fd"):
+            self.logger.stop()
+
+    def __del__(self):
+        if hasattr(self.logger, "fd"):
+            self.stop_log()
+    
+    def write_log(self, message:str, level:str="INFO"):
+        if hasattr(self.logger, "fd"):
+            self.logger.write(message,level)
+
+    def trace(self):
+        self.write_log(trace(), "ERROR")
 
     def __try_commit__(self):
         '''is autocommit turned on, it will save the table when a change is made.'''
@@ -46,7 +66,7 @@ class table(metaclass=TableMeta):
             self.data=self.io.ReadTable(self.table_name)
             self.columns=self.data.pop(0)
         except:
-            infomessage(trace())
+            self.trace()
             raise BDBException.ReadError(f"Courld not read table {self.table_name}")
 
     def __edit__(self):
@@ -55,7 +75,7 @@ class table(metaclass=TableMeta):
             data=[self.columns]+self.data
             self.io.UpdateTable(self.table_name, data)
         except:
-            infomessage(trace())
+            self.trace()
             raise BDBException.EditError(f"Could not update table {self.table_name}")
 
     def __make__(self):
@@ -66,7 +86,7 @@ class table(metaclass=TableMeta):
             self.io.CreateTable(self.table_name, [self.columns], metadata)
             return table(self.io, self.database, self.table_name)
         except:
-            infomessage(trace())
+            self.trace()
             raise BDBException.CreationError(f"Could not create table {self.table_name}")
 
     def __save__(self, name=None, types=None):
@@ -81,7 +101,7 @@ class table(metaclass=TableMeta):
                 new.__save__()
                 return new
         except Exception:
-            infomessage(trace())
+            self.trace()
             return "Error saving database"
         
         '''Commit changes to database. Call using save function in main file'''
@@ -110,7 +130,7 @@ class table(metaclass=TableMeta):
             table+="+"+"+".join("-"*(width) for width in col_widths)+"+\n"
             return table
         except Exception as e:
-            infomessage(trace())
+            self.trace()
             return f"Error generating the string representation of the table: {e}"
  
     def __load_metadata__(self):
@@ -172,7 +192,7 @@ class table(metaclass=TableMeta):
 
     def __empty_check__(self):
         if len(self) == 0:
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.EmptyTableError(f"Can't use emptpy table {self.table_name}")
 
     def __iter__(self):
@@ -195,7 +215,7 @@ class table(metaclass=TableMeta):
         '''checks to see if item is in data. Call using `item in self`'''
         self.__empty_check__()
         if not self.column and self.data:
-            infomessage(trace())
+            self.trace()
             raise BDBException.ColumunError("Must index a column to search item")
         if item in self.column:
             del self.column
@@ -215,11 +235,11 @@ class table(metaclass=TableMeta):
         '''Check new rows against specified datatypes'''
         data_types=self.__load_metadata__()[1].column
         if (len(data_types)-3) != (len(new_data)):
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.StructureError("new data doesn't match table structure")
         for i in range(len(new_data)):
             if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
-                infomessage(trace())
+                self.trace()
                 raise metaclass.BDBException.TypeError("New data does not match defined datatypes.")
         return True
 
@@ -227,7 +247,7 @@ class table(metaclass=TableMeta):
         '''ensure primary key integrity'''
         key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
         if new_data[key] in self[key].column:
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.KeyError(f"primary key {new_data[key]} is already in primary key")
         return True
     
@@ -247,7 +267,7 @@ class table(metaclass=TableMeta):
         if new_data[key] in other[other_key]:
             return True
         else:
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.RefError(f"Value {new_data[key]} not found in {other_name}")
 
     def __add__(self, value:tuple)->None:
@@ -255,19 +275,13 @@ class table(metaclass=TableMeta):
         if self.__check_type__(value) and self.__check_primary__(value) and self.__check_foreign__(value):
             self.data.append(value)
         self.__try_commit__()
-
-    def write(self, value:str)->None:
-        '''Makes tables writeable'''
-        if value=="\n": #print adds a newline by calling itself again seperatly. This was causing errors.
-            return None 
-        self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
         
     def __find_compare__(self, operator:str, value):
         self.value=value
         '''used to remove all data not meeting opperator requirments.'''
         self.__empty_check__()
         if not self.column:
-            infomessage(trace())
+            self.trace()
             raise BDBException.ColumunError(f"Must Index Column to use comparison {operator}")
         data=self.column
         rows=[]
@@ -417,13 +431,90 @@ class table(metaclass=TableMeta):
     def __scan_primary__(self):
         key=self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
         if self.contains_duplicates(self[key].column):
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.KeyError(f"primary key is duplicated in {self.table_name}: {self.column}")
         return True
     
     def __invert__(self):
         self.__init__(self.io, self.database, self.table_name,self.temp, self.data)
         return self
+
+    def write(self, value:str | tuple, line=None)->None:
+        '''Makes tables writeable'''
+        if value=="\n": #print adds a newline by calling itself again seperatly. This was causing errors.
+            return None
+        if self.seeker==-1:
+            raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}") 
+        if line==None:
+            if isinstance(value, str):
+                self.__add__(literal_eval(value)) #print also converts input to string, so evaluate to return to tuple
+            else:
+                self.__add__(value)
+        else:
+            self.seeker=line
+            self.data[line]=value #specify line parameter to overwrite data (not recommended)
+
+    def writeable(self)->bool:
+        return self.io.writable
+    
+    def truncate(self, lines:int)->int:
+        del self.data[lines:]
+        return lines
+    
+    def tell(self)->int:
+        return self.seeker
+    
+    def seek(self, offset:int, position:int)->tuple:
+        if position in (0, 1, 2):
+            self.seeker = [offset, self.seeker + offset, -1 - offset][position]
+        else:
+            raise ValueError("Position not supoorted (use range [0,2] or FBEGIN, FCURRENT, or FEND)")
+        return self.seeker
+    
+    def seekable(self)->bool:
+        return (not self.seeker==1) and self.io.writable
+        #if the table is no longer seekable, set seeker to -1
+    
+    def readable(self)->bool:
+        return self.io.writable
+    
+    def read(self)->tuple:
+        return self.data
+    
+    def readline(self, position:int=None)->tuple:
+        if self.seeker==-1:
+            raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}")
+        if not hasattr(self, "seeker"):
+            self.seeker=0
+        self.seeker==position or self.seeker # NOSONAR
+        data=self.data[self.seeker]
+        self.seeker=(self.seeker+1)%len(self)
+        return data
+    
+    def readlines(self, lines:int)->list[tuple]:
+        if self.seeker==-1:
+            raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}")
+        if not hasattr(self, "seeker"):
+            self.seeker=0
+        data=self.data[self.seeker:self.seeker+lines]
+        self.seeker=(self.seeker+lines+1)%len(self)
+        return data
+    
+    def flush(self)->None:
+        self.__save__()
+
+    def detach(self)->None:
+        self.seeker=-1
+    
+    def isatty(self)->bool:
+        return hasattr(self.logger, "fd") #if a file descriptor exists, it is connected to a terminal
+    
+    def fileno(self) -> int | None:
+        if hasattr(self.logger, "fd"):
+            return self.logger.fd
+        return None
+
+
 
 class SAVEPOINT(metaclass=SavepointMeta):
     def __matmul__(self, other:table):
@@ -432,20 +523,20 @@ class SAVEPOINT(metaclass=SavepointMeta):
             rollback=table(other.io, other.database, "rollback"+other.table_name, True, data)
             other.rollback = rollback
         except:
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.TransactionError(f"Error creating savepoint for {other.table_name}")
 
 class ROLLBACK(metaclass=RollbackMeta):
     def __matmul__(self, other:table):
         if not other.rollback:
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.TransactionError(f"Table {other.table_name} doesn't have a savepoint")
         try:
             data=other.rollback.data
             del other.rollback.data
             other.data=data
         except:
-            infomessage(trace())
+            self.trace()
             raise metaclass.BDBException.TransactionError(f"Error Rolling back table {other.table_name}")
 
 class COMMIT(metaclass=CommitMeta):
