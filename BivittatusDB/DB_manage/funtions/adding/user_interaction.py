@@ -40,7 +40,6 @@ def get_db_and_table_names():
         else:
             try:
                 db.load_table(table_name)
-                #pause_and_clean(2)
                 return db_directory, table_name
             except Exception as e:
                 print(f"Error loading the table '{table_name}': {e}")
