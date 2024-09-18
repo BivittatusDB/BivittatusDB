@@ -69,10 +69,6 @@ def remove_rows():
         if tb1 is None:
             print("Error: Table could not be loaded.")
             return
-        
-    else:
-        print("Invalid choice. Exiting.")
-        return
 
     # Initialize the table (if not already loaded)
     if tb1 is None:
