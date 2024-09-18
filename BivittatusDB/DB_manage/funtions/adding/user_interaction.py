@@ -39,7 +39,7 @@ def get_db_and_table_names():
             print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
         else:
             try:
-                tb1 = db.load_table(table_name)
+                db.load_table(table_name)
                 #pause_and_clean(2)
                 return db_directory, table_name
             except Exception as e:
