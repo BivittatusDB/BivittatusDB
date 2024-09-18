@@ -472,7 +472,7 @@ class table(metaclass=TableMeta):
         return self.seeker
     
     def seekable(self)->bool:
-        return (not self.seeker!=1) and self.io.writable
+        return (not self.seeker==1) and self.io.writable
         #if the table is no longer seekable, set seeker to -1
     
     def readable(self)->bool:
