@@ -40,7 +40,7 @@ def list_pydb():
             print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
         else:
             try:
-                db.load_table(table_name)
+                tb1 = db.load_table(table_name)
                 return db_directory, table_name
             except Exception as e:
                 print(f"Error loading the table '{table_name}': {e}")
