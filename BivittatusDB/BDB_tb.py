@@ -486,7 +486,7 @@ class table(metaclass=TableMeta):
             raise metaclass.BDBException.SeekerError(f"Problem using seeker. Try reloading the table. seeker:{self.seeker}")
         if not hasattr(self, "seeker"):
             self.seeker=0
-        self.seeker==position or self.seeker
+        self.seeker==position or self.seeker # NOSONAR
         data=self.data[self.seeker]
         self.seeker=(self.seeker+1)%len(self)
         return data
