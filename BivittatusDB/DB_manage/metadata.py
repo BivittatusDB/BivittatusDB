@@ -63,7 +63,7 @@ def print_metadata():
 
         if table_name not in tables:
             pause_and_clean(0)
-            print(f"Table ‘{table_name}’ was not found. Enter a valid name from the list above.")
+            print(f"Table '{table_name}' was not found. Enter a valid name from the list above.")
         else:
             break
 
