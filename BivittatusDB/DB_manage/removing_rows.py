@@ -1,31 +1,8 @@
-import BivittatusDB as bdb
+from DB_manage.funtions.common.db_utils import initialize_database, load_existing_table
 from DB_manage.funtions.common.list_dir_pydb import list_pydb
 from DB_manage.funtions.common.user_interaction_common import get_db_choice
-from DB_manage.funtions.adding.db_utils import load_existing_table
 from DB_manage.funtions.common.saving import save_table
 from bdb_aggregate import pause_and_clean
-
-def initialize_table(db_name, table_name):
-    """
-    Initializes a table from a database.
-    
-    Args:
-        db_name (str): The name of the database.
-        table_name (str): The name of the table to load.
-    
-    Returns:
-        object: The loaded table, or None if an error occurred.
-    """
-    try:
-        # Initialize the database
-        test_db = bdb.database(db_name).init()
-        # Load the table from the initialized database
-        tb1 = test_db.load_table(table_name)
-        print(f"Table '{table_name}' successfully loaded.")
-        return tb1
-    except Exception as e:
-        print(f"Error loading table: {e}")
-        return None
 
 def remove_rows_from_table(tb1):
     """
@@ -72,7 +49,7 @@ def remove_rows():
 
     # Initialize the table (if not already loaded)
     if tb1 is None:
-        tb1 = initialize_table(db_name, table_name)
+        tb1 = initialize_database(db_name, table_name)
         if tb1 is None:
             print("Error: Table could not be initialized.")
             return

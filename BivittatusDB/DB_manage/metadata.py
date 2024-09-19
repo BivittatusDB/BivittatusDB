@@ -79,14 +79,14 @@ def print_metadata():
         try:
             print(bdb.metadata(tb1))
         except Exception as e:
-            print(f"Error al mostrar los metadatos de la tabla '{table_name}': {e}")
+            print(f"Error when displaying table metadata '{table_name}': {e}")
             return
 
         # Ask if the user wants to exit
-        exit_choice = input("¿Quieres salir (y)? ").strip().lower()
+        exit_choice = input("Do you want to go out (y)? ").strip().lower()
 
         if exit_choice == "y":
             return
         else:
-            print("Entrada no válida. Por favor, ingresa 'y' para salir")
+            print("Invalid entry. Please enter 'y' to exit.")
             pause_and_clean(0.8)
