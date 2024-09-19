@@ -1,39 +1,7 @@
 import BivittatusDB as bdb
-from bdb_aggregate import delay, pause_and_clean, show
-
-def get_db_choice_common():
-    """
-    Asks the user if they want to load an existing database.
-    
-    Returns:
-        str: 'y' to load an existing database, 'n' to not load it, or None to cancel.
-    """
-    while True:
-        choice = input("Do you want to load an existing database (y/n)? ").strip().lower()
-        if choice in ['y', 'n']:
-            return choice
-        print("Invalid input. Please enter 'y' or 'n'.")
-
-def list_pydb(db_directory):
-    """
-    Retrieves the list of tables from the database folder.
-    
-    Args:
-        db_directory (str): The name of the database folder.
-    
-    Returns:
-        tuple: (db_directory, tables) if tables are successfully retrieved, (None, None) otherwise.
-    """
-    while True:
-        try:
-            tables = show(db_directory)
-            if not tables:
-                print(f"No tables found in the folder '{db_directory}'.")
-                return None, None
-            return db_directory, tables
-        except Exception as e:
-            print(f"Error retrieving tables from the folder '{db_directory}': {e}")
-            delay(1)
+from DB_manage.funtions.common.list_dir_pydb import list_pydb
+from DB_manage.funtions.common.user_interaction_common import get_db_choice
+from bdb_aggregate import delay, pause_and_clean
 
 def load_db_and_table(db_directory, table_name):
     """
@@ -67,7 +35,7 @@ def print_metadata():
     and allows selecting other tables or exiting the program.
     """
     # Ask the user if they want to load an existing database
-    db_choice = get_db_choice_common()
+    db_choice = get_db_choice()
     
     if db_choice is None:
         return  # Exit if the user chose to cancel
@@ -103,15 +71,13 @@ def print_metadata():
     while True:
         # Print the table metadata
         print("Table metadata:")
-        print("Enter 'n' to exit")
         print(bdb.metadata(tb1))
 
         # Ask if the user wants to exit
-        exit_choice = input("Do you want to exit (y/n)? ").strip().lower()
+        exit_choice = input("Do you want to exit (y)? ").strip().lower()
         
         if exit_choice == "y":
             return
-        elif exit_choice == "n":
-            return None
         else:
-            print("Invalid input. Please enter 'y' or 'n'.")
+            print("Invalid input. Please enter 'y' to exit")
+            pause_and_clean(0.8)

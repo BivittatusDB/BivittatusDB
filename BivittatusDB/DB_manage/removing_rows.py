@@ -1,5 +1,6 @@
 import BivittatusDB as bdb
-from DB_manage.metadata import get_db_choice_common, list_pydb
+from DB_manage.funtions.common.list_dir_pydb import list_pydb
+from DB_manage.funtions.common.user_interaction_common import get_db_choice
 from DB_manage.funtions.adding.db_utils import load_existing_table
 from DB_manage.funtions.common.saving import save_table
 from bdb_aggregate import pause_and_clean
@@ -54,7 +55,7 @@ def remove_rows():
     Handles the process of selecting a database and table, removing rows, and saving the table.
     """
     # Get the user's choice (load existing DB or create a new one)
-    db_choice = get_db_choice_common()
+    db_choice = get_db_choice()
 
     if db_choice == "y":
         # Load existing DB and table

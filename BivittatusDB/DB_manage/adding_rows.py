@@ -1,4 +1,4 @@
-from DB_manage.funtions.adding.user_interaction import get_db_choice, get_db_and_table_names
+from DB_manage.funtions.common.user_interaction_common import get_db_and_table_names, get_db_choice
 from DB_manage.funtions.adding.table_utils import add_names_to_table
 from DB_manage.funtions.adding.db_utils import load_existing_table, create_new_table
 from DB_manage.funtions.common.saving import save_table
