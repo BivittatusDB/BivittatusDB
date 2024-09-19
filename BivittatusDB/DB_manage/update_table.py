@@ -1,5 +1,5 @@
 import BivittatusDB as bdb
-from DB_manage.metadata import list_pydb
+from DB_manage.funtions.common.list_dir_pydb import list_pydb
 from DB_manage.funtions.common.saving import save_table
 from bdb_aggregate import pause_and_clean
 

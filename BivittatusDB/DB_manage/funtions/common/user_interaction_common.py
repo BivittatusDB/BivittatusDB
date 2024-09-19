@@ -58,16 +58,3 @@ def get_db_and_table_names():
                 return db_directory, table_name
             except Exception as e:
                 print(f"Error loading the table '{table_name}': {e}")
-
-def get_db_choice_common():
-    """
-    Asks the user if they want to load an existing database.
-    
-    Returns:
-        str: 'y' to load an existing database, 'n' to not load it, or None to cancel.
-    """
-    while True:
-        choice = input("Do you want to load an existing database (y/n)? ").strip().lower()
-        if choice in ['y', 'n']:
-            return choice
-        print("Invalid input. Please enter 'y' or 'n'.")
