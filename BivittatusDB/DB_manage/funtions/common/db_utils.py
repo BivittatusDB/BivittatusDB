@@ -1,17 +1,7 @@
 # DB_manage/funtions/common/db_utils.py
-
 import BivittatusDB as bdb
 
 def initialize_database(db_name):
-    """
-    Initializes a database using the BivittatusDB (bdb) library.
-    
-    Args:
-        db_name (str): The name of the database to initialize.
-    
-    Returns:
-        object: The initialized database instance, or None if an error occurred.
-    """
     try:
         # Inicializar la base de datos usando la función 'init()'
         test_db = bdb.database(db_name).init()
@@ -22,16 +12,6 @@ def initialize_database(db_name):
         return None
 
 def load_existing_table(db_name, table_name):
-    """
-    Loads an existing table from an initialized database instance.
-    
-    Args:
-        db_name (str): The name of the database.
-        table_name (str): The name of the table to load.
-    
-    Returns:
-        object: The loaded table, or None if an error occurred.
-    """
     try:
         # Inicializar la base de datos
         db_instance = initialize_database(db_name)

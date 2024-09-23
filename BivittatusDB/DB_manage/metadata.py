@@ -83,7 +83,7 @@ def print_metadata():
             return
 
         # Ask if the user wants to exit
-        exit_choice = input("Do you want to go out (y)? ").strip().lower()
+        exit_choice = input("Do you want exit (y)? ").strip().lower()
 
         if exit_choice == "y":
             return

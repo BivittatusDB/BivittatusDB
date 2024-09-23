@@ -1,21 +1,18 @@
 from bdb_aggregate import pause_and_clean, show, delay
 import BivittatusDB as bdb
 
+#Needs a fix (double n to cancel)
 def get_db_choice():
-    """
-    Asks the user if they want to load an existing database or create a new one.
-    
-    Returns:
-        str: 'y' to load an existing database, 'n' to create a new one.
-    """
     while True:
-        print("To create a new database input: 'n'")
         choice = input("Do you want to load an existing database (y/n): ").strip().lower()
-        if choice in ['y', 'n']:
-            return choice
-        else:
-            print("Invalid input. Please enter 'y' or 'n'.")
+        if choice == 'n':
+            print("Operation canceled.")
+            return None  # Return None to indicate cancellation
+        elif choice == 'y':
+            return 'y'  # Return 'y' to indicate loading an existing database
+        print("Invalid input. Please enter 'y' or 'n'.")
 
+#Implemented on adding.py (Needs changes)
 def get_db_and_table_names():
     """
     Prompts the user to enter the database folder name and table name, and initializes the database.
