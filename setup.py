@@ -7,12 +7,12 @@ with open("README.md", "r") as fh:
 setup(
     name="bivittatusDB",
     version="1.2.0.1",  # NOSONAR
-    author="HarbingerOfFire",
+    author="BivittatusDB",
     author_email="harbingeroffire@proton.me",  # Replace with the author's email
     description="Operator Based Relational Database Management system for python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/HarbingerOfFire/bivittatusDB",
+    url="https://github.com/BivittatusDB/BivittatusDB",
     packages=find_packages(),
     package_data={
         'BivittatusDB':['./*.so'],
