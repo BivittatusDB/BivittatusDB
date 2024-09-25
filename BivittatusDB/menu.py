@@ -1,4 +1,3 @@
-
 from DB_manage.removing_rows import remove_rows
 from DB_manage.update_table import update_tb
 from DB_manage.adding_rows import add_names_to_db

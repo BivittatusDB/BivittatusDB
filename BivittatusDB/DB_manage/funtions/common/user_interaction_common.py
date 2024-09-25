@@ -1,19 +1,10 @@
-from bdb_aggregate import delay
-
-def get_db_choice_common():
-    """
-    Asks the user if they want to load an existing database.
-    
-    Returns:
-        str: 'y' for loading an existing database, 'n' for not loading.
-    """
+#Needs a fix (double n to cancel)
+def get_db_choice():
     while True:
         choice = input("Do you want to load an existing database (y/n): ").strip().lower()
-        if choice in ['y']:
-            return choice
-        if choice in ['n']:
+        if choice == 'n':
             print("Operation canceled.")
-            delay(0.8)
-            return None
-        else:
-            print("Invalid input. Please enter 'y'.")
+            return None  # Return None to indicate cancellation
+        elif choice == 'y':
+            return 'y'  # Return 'y' to indicate loading an existing database
+        print("Invalid input. Please enter 'y' or 'n'.")
