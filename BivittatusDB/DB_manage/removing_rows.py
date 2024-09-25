@@ -23,7 +23,7 @@ def remove_rows():
                 print("Error: No valid tables found in the directory.")
                 return
 
-            print("Available tables:", tables)
+            print("Available tables:", ", ".join(tables))
             table_name = input("Enter the table name you want to load: ").strip()
             if table_name not in tables:
                 print(f"Error: Table '{table_name}' not found in the directory.")
