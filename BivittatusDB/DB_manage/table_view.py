@@ -60,8 +60,8 @@ def confirm_exit(tb1):
             pause_and_clean(0)
             return True
         else:
-            pause_and_clean(0)
             print("To exit, please enter 'y'")
+            pause_and_clean(0.8)
             print("The current table:")
             print(tb1)
 
