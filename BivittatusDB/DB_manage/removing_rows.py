@@ -36,9 +36,11 @@ def remove_rows():
         except Exception as e:
             print(f"Error loading existing table: {e}")
             return
+    elif db_choice is None:
+        print("Operation canceled.")
+        return
     else:
         try:
-            # Assuming that get_db_choice() returns db_name and table_name
             db_name, table_name = get_db_choice()
             tb1 = initialize_database(db_name, table_name)
             if tb1 is None:

@@ -1,7 +1,7 @@
 import BivittatusDB as bdb
 from DB_manage.funtions.common.list_dir_pydb import list_pydb
 from DB_manage.funtions.common.saving import save_table
-from bdb_aggregate import pause_and_clean
+from bdb_aggregate import delay, pause_and_clean
 
 def get_input(prompt, valid_options=None, convert_func=None):
     while True:
@@ -21,7 +21,9 @@ def get_input(prompt, valid_options=None, convert_func=None):
 
 def initialize_table(db_name, table_name):
     try:
+        print(f"Initializing database: {db_name}")
         db = bdb.database(db_name).init()
+        print(f"Loading table: {table_name}")
         table = db.load_table(table_name)
         print(f"Table '{table_name}' successfully loaded.")
         return table
@@ -53,21 +55,40 @@ def update_table(table):
             print(f"Error updating table: {e}")
             pause_and_clean(0.8)
 
-
 def update_tb():
-    # Use list_pydb to select the database and table
-    db_directory, table_name = list_pydb()
-    
-    if db_directory is None or table_name is None:
-        return  # Exit if the user cancels or an error occurs
+    try:
+        # Prompt the user to enter the database directory
+        db_directory = get_input("Enter the database directory: ")
+        if db_directory == 'exit':
+            print("Operation canceled.")
+            return
 
-    # Initialize and update the selected table
-    table = initialize_table(db_directory, table_name)
-    if table is None:
-        return
+        # Use list_pydb to select the table
+        print("Listing tables in the database...")
+        tables = list_pydb(db_directory)
+        
+        if not tables:
+            print("Operation canceled or error occurred during listing.")
+            return  # Exit if the user cancels or an error occurs
 
-    update_table(table)
-    save_table(table)
+        # Prompt the user to select a table
+        table_name = get_input("Enter the table name you want to load: ", valid_options=tables)
+        if table_name == 'exit':
+            print("Operation canceled.")
+            return
+
+        # Initialize and update the selected table
+        print(f"Selected database: {db_directory}, table: {table_name}")
+        table = initialize_table(db_directory, table_name)
+        if table is None:
+            print("Error: Table could not be initialized.")
+            return
+
+        update_table(table)
+        save_table(table)
+    except Exception as e:
+        print(f"General error: {e}")
+        delay(2)
 
 if __name__ == "__main__":
     update_tb()
