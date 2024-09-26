@@ -11,8 +11,8 @@ def get_next_id(tb1):
         return None
 
 def add_names_to_table(tb1):
-    id = get_next_id(tb1)
-    if id is None:
+    next_id = get_next_id(tb1)
+    if next_id is None:
         return
 
     while True:
@@ -24,7 +24,7 @@ def add_names_to_table(tb1):
             pause_and_clean(0)
             break
         try:
-            tb1 + (id, name)
-            id += 1
+            tb1 + (next_id, name)
+            next_id += 1
         except Exception as e:
             print(f"Error adding name to table: {e}")
