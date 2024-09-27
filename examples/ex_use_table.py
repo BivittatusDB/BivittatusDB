@@ -4,6 +4,6 @@ import BivittatusDB as bdb
 db=bdb.database("test").use()
 
 #pull table from database to use
-tb1=db.load_table("Table1")
+tb1=db("Table1")
 
 print(tb1)

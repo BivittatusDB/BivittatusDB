@@ -1,3 +1,4 @@
+from typing import Any
 import metaclass
 try:
     from bdb_aggregate import *
@@ -28,6 +29,9 @@ class database:
         except Exception:
             raise metaclass.BDBException.IOError(f"Error finding table {table_name}")
     
+    def __call__(self, table_name:str) -> table:
+        return self.load_table(table_name)
+
     def New_table(self, name:str, columns:tuple, data_types:tuple, primary:str=None, foreign:list=None):
         '''Make a new table and specify the name, columns and data types. Optionally assign primary key. Returns the table'''
         if primary not in columns:
@@ -35,7 +39,7 @@ class database:
                 raise metaclass.BDBException.KeyError(f"Can't make unknown column {primary} into a primary key")
         metadata=[("Data", "Type")]
         for column, value in zip(columns, data_types):
-            metadata.append((column, value))
+            metadata.append((column, value()))
         metadata.append(("Primary Key", f"{primary}"))
         metadata.append(("Foreign Key", f"{foreign}"))
         metadata.append(("Refrenced By", ""))

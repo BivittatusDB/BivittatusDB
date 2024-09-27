@@ -11,7 +11,7 @@ test_db=bdb.database("test").init()
 #create a new table
 tb1=test_db.New_table("table1", 
                        ("id", "name"), 
-                       (int(), str()), 
+                       (int, str), 
                        "id")
 
 #add data to the table

@@ -8,8 +8,8 @@ except: pass
 test_db=bdb.database("test").init()
 
 #create tables
-tb1=test_db.New_table("table1", ("id", "name"), (int(), str()), "id")
-tb2=test_db.New_table("table2", ("id", "language"), (int(), str()), "id")
+tb1=test_db.New_table("table1", ("id", "name"), (int, str), "id")
+tb2=test_db.New_table("table2", ("id", "language"), (int, str), "id")
 
 #add rows to the tables
 tb1+(1, "Alice")
@@ -29,5 +29,5 @@ print(tb3)
 bdb.save(tb3, "table3", (int(), str(), str()))
 
 #load the table into the code
-tb4=test_db.load_table("table3")
+tb4=test_db("table3")
 print(tb4)

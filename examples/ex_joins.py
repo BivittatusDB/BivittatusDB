@@ -10,12 +10,12 @@ test_db=bdb.database("test").init()
 #create new tables
 tb1=test_db.New_table("table1", 
                       ("id", "name"), 
-                      (int(), str()), 
+                      (int, str), 
                       "id")
 
 tb2=test_db.New_table("table2", 
                       ("id", "language"), 
-                      (int(), str()), 
+                      (int, str), 
                       "id")
 
 #add rows to table1

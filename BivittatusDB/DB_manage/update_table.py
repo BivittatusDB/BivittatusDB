@@ -25,7 +25,7 @@ def initialize_table(db_name, table_name):
         print(f"Initializing database: {db_name}")
         db = bdb.database(db_name).init()
         print(f"Loading table: {table_name}")
-        table = db.load_table(table_name)
+        table = db(table_name)
         print(f"Table '{table_name}' successfully loaded.")
         return table
     except Exception as e:

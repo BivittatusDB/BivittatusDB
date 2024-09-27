@@ -11,7 +11,7 @@ test_db=bdb.database("test").init()
 #create a new table 
 tb2=test_db.New_table("table2", 
                        ("id", "name"), 
-                       (int(), str()), 
+                       (int, str), 
                        "id")
 
 #turn on autocommit for table2
@@ -19,7 +19,7 @@ tb2@bdb.ON # Necissary for the referenced table or the refrencer reads wrong dat
 
 tb1=test_db.New_table("table1", 
                        ("id", "name"), 
-                       (int(), str()), 
+                       (int, str), 
                        "id",
                        ["table2", bdb.PRIMARY, bdb.PRIMARY])
 

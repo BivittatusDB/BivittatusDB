@@ -7,7 +7,7 @@ def load_db_and_table(db_directory, table_name):
     try:
         db = bdb.database(db_directory).use()
         print("Database initialized correctly.")
-        tb1 = db.load_table(table_name)
+        tb1 = db(table_name)
         print(f"Table '{table_name}' loaded successfully.")
         return db, tb1
     except Exception as e:

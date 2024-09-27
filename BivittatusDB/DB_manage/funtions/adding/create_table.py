@@ -39,7 +39,7 @@ def create_db_and_table():
         table = db.New_table(
             table_name,
             ("id", "name"),
-            (int(), str()),
+            (int, str),
             "id"
         )
 

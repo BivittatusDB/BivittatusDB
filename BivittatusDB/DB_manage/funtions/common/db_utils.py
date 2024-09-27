@@ -19,7 +19,7 @@ def load_existing_table(db_name, table_name):
             raise ValueError("Failed to initialize the database.")
         
         # Cargar la tabla desde la base de datos
-        tb1 = db_instance.load_table(table_name)
+        tb1 = db_instance(table_name)
         print(f"Table '{table_name}' successfully loaded.")
         return tb1
     except Exception as e:

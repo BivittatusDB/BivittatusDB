@@ -11,7 +11,7 @@ test_db=bdb.database("test").init()
 #create a new table 
 tb2=test_db.New_table("table2", 
                        ("id", "name"), 
-                       (int(), str()), 
+                       (int, str), 
                        "id")
 
 tb2@bdb.ON # Necissary for the referenced table or the refrencer reads wrong data
