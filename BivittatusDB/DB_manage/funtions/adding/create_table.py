@@ -1,4 +1,5 @@
 import os
+import traceback
 import BivittatusDB as bdb
 from bdb_aggregate import delay
 
@@ -15,8 +16,11 @@ def create_db_and_table():
 
     # Check and create the directory if it doesn't exist
     try:
-        os.makedirs(db_directory, exist_ok=True)
+        os.makedirs(db_directory, exist_ok=False)
         print(f"Directory '{db_directory}' is ready.")
+    except OSError as e:
+        print(f"Cannot create a database in {db_directory} because directory already exists")
+        return
     except Exception as e:
         print(f"Error creating directory '{db_directory}': {e.__class__.__name__} - {e}")
         delay(1.2)
@@ -38,6 +42,7 @@ def create_db_and_table():
             (int(), str()),
             "id"
         )
+
         print(f"New table '{table_name}' created in database '{db_directory}'.")
         
         # Verification of table creation
@@ -48,6 +53,7 @@ def create_db_and_table():
     
     except Exception as e:
         print(f"Error creating table '{table_name}' in database '{db_directory}': {e.__class__.__name__} - {e}")
+        traceback.print_exc()
         delay(1.2)
 
 if __name__ == "__main__":
