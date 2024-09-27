@@ -1,5 +1,6 @@
 import os
 import BivittatusDB as bdb
+from bdb_aggregate import delay
 
 def create_db_and_table():
     # Request user input
@@ -9,6 +10,7 @@ def create_db_and_table():
     # Validate inputs
     if not table_name:
         print("Table name cannot be empty.")
+        delay(1.2)
         return
 
     # Check and create the directory if it doesn't exist
@@ -17,6 +19,7 @@ def create_db_and_table():
         print(f"Directory '{db_directory}' is ready.")
     except Exception as e:
         print(f"Error creating directory '{db_directory}': {e.__class__.__name__} - {e}")
+        delay(1.2)
         return
 
     # Create the database and the table
@@ -26,6 +29,7 @@ def create_db_and_table():
         # Initialize the database using the init() function
         db = bdb.database(db_path).init()
         print(f"Database '{table_name}' successfully initialized.")
+        delay(1.2)
         
         # Create the new table
         table = db.New_table(
@@ -44,6 +48,7 @@ def create_db_and_table():
     
     except Exception as e:
         print(f"Error creating table '{table_name}' in database '{db_directory}': {e.__class__.__name__} - {e}")
+        delay(1.2)
 
 if __name__ == "__main__":
     create_db_and_table()
