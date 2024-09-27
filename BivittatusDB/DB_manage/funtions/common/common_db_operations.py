@@ -29,12 +29,6 @@ def get_table_from_db():
             return None
 
     elif db_choice == "n":
-        db_name = input("Enter a name for your DB: ").strip()
-        table_name = input("Enter a name for the new table: ").strip()
-        # here you should define or import `create_new_table` if needed
-        # tb1 = create_new_table(db_name, table_name)
-        # For demonstration purposes, let's assume that `create_new_table` is not defined.
-        print("The function 'create_new_table' is not defined. Please define it or remove this part.")
         return None
 
     else:

@@ -1,3 +1,4 @@
+from DB_manage.funtions.adding.create_table import create_db_and_table
 from DB_manage.removing_rows import remove_rows
 from DB_manage.update_table import update_tb
 from DB_manage.adding_rows import add_names_to_db
@@ -16,7 +17,8 @@ def display_menu():
         "Option 3: Delete values in the table",
         "Option 4: Update values in the table",
         "Option 5: Print metadata",
-        "Option 6: Exit"
+        "Option 6: Create DB",
+        "Option 7: Exit"
     ]
     print("What do you want to do?")
     for option in menu_options:
@@ -40,6 +42,9 @@ def execute_option(option):
             pause_and_clean(0)
             print_metadata()
         elif option == "6":
+            pause_and_clean(0)
+            create_db_and_table()
+        elif option == "7":
             print("Exiting....")
             pause_and_clean(0.4)
             return False
