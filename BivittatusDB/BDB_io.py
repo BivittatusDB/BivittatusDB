@@ -16,7 +16,7 @@ except ImportError:
 
 # Load the shared library
 def load_shared_library():
-    library_name = 'lib_bdb_win32.so' if os.name == 'nt' else 'lib_bdb_elf.so'
+    library_name = 'lib_bdb_win32.dll' if os.name == 'nt' else 'lib_bdb_elf.so'
     library_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), library_name)
     try:
         return ctypes.CDLL(library_path)
