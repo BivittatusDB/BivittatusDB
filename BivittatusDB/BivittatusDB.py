@@ -5,7 +5,7 @@ try:
     from BDB_tb import *
     from BDB_io import Handler
     from bdb_foreign import ForeignKey
-    from encryption.key_transition import KeyTransition
+    from encrypt import KeyTransition
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
