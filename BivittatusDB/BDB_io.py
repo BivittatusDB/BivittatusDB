@@ -4,6 +4,7 @@ import metaclass
 import ctypes
 import os
 import getpass
+import platform
 from json import dumps, loads
 from gzip import compress, decompress
 from binascii import hexlify, unhexlify
@@ -16,7 +17,8 @@ except ImportError:
 
 # Load the shared library
 def load_shared_library():
-    library_name = 'lib_bdb_win32.so' if os.name == 'nt' else 'lib_bdb_elf.so'
+    address_size =platform.architecture()[0][:2]
+    library_name = f'bin/lib_bdb_win{address_size}.dll' if os.name == 'nt' else 'bin/lib_bdb_elf.so'
     library_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), library_name)
     try:
         return ctypes.CDLL(library_path)

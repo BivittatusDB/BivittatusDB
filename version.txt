@@ -1,2 +1,2 @@
-BivittatusDB v1.2.0.1
+BivittatusDB v1.2.0.2
 Ownership change release
