@@ -5,7 +5,7 @@ try:
     from BDB_io import Handler
     from tty_log import logger
     from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
-    from bdb_foreign import ForeignKey, json
+    from bdb_foreign import Foreign_key, json
     from ast import literal_eval
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
@@ -144,7 +144,7 @@ class table(metaclass=TableMeta):
         if key=="":
             return None
         key=json.loads(key)
-        fkey=ForeignKey(*key)
+        fkey=Foreign_key(*key)
         return fkey, table(self.io, self.database, fkey.FT)
 
     def __len__(self)->int:

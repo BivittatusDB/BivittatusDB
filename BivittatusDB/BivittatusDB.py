@@ -4,8 +4,8 @@ try:
     from bdb_aggregate import *
     from BDB_tb import *
     from BDB_io import Handler
-    from bdb_foreign import ForeignKey
-    from encrypt import KeyTransition
+    from bdb_foreign import Foreign_key
+    from encryption.key_transition import KeyTransition
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
@@ -53,7 +53,7 @@ class database:
                 if foreign[1]==PRIMARY:
                     foreign[1]=fmeta[1].column.pop(-3)
                 foreign[0]=name
-                FKey=ForeignKey(*foreign)
+                FKey=Foreign_key(*foreign)
                 fmeta[1]=(repr(FKey), fmeta[0]=="Refrenced By")
         return self.load_table(name)
     
