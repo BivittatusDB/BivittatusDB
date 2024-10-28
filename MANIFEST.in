@@ -1,0 +1,5 @@
+# MANIFEST.in
+include BivittatusDB/*.so
+include BivittatusDB/bin/*.so
+include BivittatusDB/bin/*.dll
+include *.png
