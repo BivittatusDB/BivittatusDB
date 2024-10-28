@@ -2,9 +2,9 @@
 <img src="./logo.png" />
 </p>
 
-[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.2.0.3")
+[![Static Badge](https://img.shields.io/badge/Version-View-%20green)](./version.txt "1.2.0.4")
 [![Static Badge](https://img.shields.io/badge/PIP%20-%20View-blue)](https://pypi.org/project/bivittatusDB/)
-![Static Badge](https://img.shields.io/badge/MajorBuild-1.2.0.3-%20green)
+![Static Badge](https://img.shields.io/badge/MajorBuild-1.2.0.4-%20green)
 ![Static Badge](https://img.shields.io/badge/Language%20-%20Python%20(3.x)-blue)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=HarbingerOfFire_bivittatusDB&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=HarbingerOfFire_bivittatusDB)
 

@@ -1,2 +1,2 @@
-BivittatusDB v1.2.0.3
-PyPi setup update
+BivittatusDB v1.2.0.4
+PyPi setup update 2
