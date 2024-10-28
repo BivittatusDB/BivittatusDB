@@ -16,6 +16,7 @@ setup(
     packages=find_packages(),
     package_data={
         'BivittatusDB':['./*.so'],
+        'BivittatusDB/bin':['./*.so', './*.dll'],
         '':["./*png"]
     },
     include_package_data=True,
