@@ -10,15 +10,17 @@ except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
 class database:
-    def __init__(self, database_name:str, Encrpyt:bool=False):
+    def __init__(self, database_name:str, Encrypt:bool=False):
         self.database_name=database_name
-        self.db=Handler(database_name, Encrpyt)
+        self.Encrypt = Encrypt
 
     def init(self):
+        self.db=Handler(self.database_name, self.Encrypt) #move down to remove pre-mature initialization
         self.db.init().use()
         return self
     
     def use(self):
+        self.db=Handler(self.database_name, self.Encrypt)
         self.db.use()
         return self
 
@@ -56,6 +58,34 @@ class database:
                 FKey=ForeignKey(*foreign)
                 fmeta[1]=(repr(FKey), fmeta[0]=="Refrenced By")
         return self.load_table(name)
+    
+    def init_from_json(self, jsonfile):
+        with open(jsonfile) as jf:
+            data=dict(json.load(jf))
+        
+        #ensure the database is defined in the json file
+        try:
+            tables=data[self.database_name]
+        except:
+            raise metaclass.BDBException.RefError(f"Cannot find {self.database_name} in {jsonfile}")
+        
+        #init the database
+        try: drop(self.database_name)
+        except: pass
+        self.init()
+
+        for table in tables.keys():
+            tbname, table = table, tables[table]
+            foreign_data=table.get("foreign_key", None)
+            self.New_table(tbname,
+                           tuple(table["columns"]),
+                           tuple([eval(type) for type in table["data_types"]]),
+                           table.get("primary_key", None),
+                           foreign_data if foreign_data==None else [val if val!="PRIMARY" else PRIMARY for val in foreign_data]
+                           )
+
+
+
     
 #used for sharing tables
 class Share(KeyTransition):

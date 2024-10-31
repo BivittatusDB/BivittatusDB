@@ -19,7 +19,7 @@ tb2@bdb.ON # Necissary for the referenced table or the refrencer reads wrong dat
 #create a new table 
 tb1=test_db.New_table("table1", 
                        ("id", "name"), 
-                       (int(), str()), 
+                       (int, str), 
                        "id",
                        ["table2", bdb.PRIMARY, bdb.PRIMARY]) #"id" of table1 is a foreign key to "id" of "table2"
 
