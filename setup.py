@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="bivittatusDB",
-    version="1.2.0.2",  # NOSONAR
+    version="1.2.0.5",  # NOSONAR
     author="BivittatusDB",
     author_email="harbingeroffire@proton.me",  # Replace with the author's email
     description="Operator Based Relational Database Management system for python",
@@ -16,6 +16,7 @@ setup(
     packages=find_packages(),
     package_data={
         'BivittatusDB':['./*.so'],
+        'BivittatusDB/bin':['./*.so', './*.dll'],
         '':["./*png"]
     },
     include_package_data=True,

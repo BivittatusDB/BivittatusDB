@@ -1,0 +1,15 @@
+{
+    "test": {
+        "table2": {
+            "columns": ["id", "name"],
+            "data_types": ["int", "str"],
+            "primary_key":"id"
+        },
+        "table1": {
+            "columns": ["id", "name"],
+            "data_types":["int", "str"],
+            "primary_key":"id",
+            "foreign_key":["table2", "PRIMARY", "PRIMARY"]
+        }
+    }
+}

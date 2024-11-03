@@ -1,0 +1,19 @@
+{
+    "table2":{
+        "data":[
+            [1, "Python"],
+            [2, "Java"],
+            [3, "Rust"],
+            [4, "C++"]
+        ],
+        "def_val": null
+    },
+    "table1":{
+        "data":[
+            [1, "Alice"],
+            [2, "Bob"],
+            [3, "Cindy"]
+        ],
+        "def_val": null
+    }
+}

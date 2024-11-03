@@ -10,20 +10,26 @@ except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
 
 class database:
-    def __init__(self, database_name:str, Encrpyt:bool=False):
+    def __init__(self, database_name:str, Encrypt:bool=False):
         self.database_name=database_name
-        self.db=Handler(database_name, Encrpyt)
+        self.Encrypt = Encrypt
 
     def init(self):
+        self.db=Handler(self.database_name, self.Encrypt) #move down to remove pre-mature initialization
         self.db.init().use()
+        self.is_init=True
         return self
     
     def use(self):
+        self.db=Handler(self.database_name, self.Encrypt)
         self.db.use()
+        self.is_init=True
         return self
 
     def load_table(self, table_name:str):
         '''load preexisting tables from the database.'''
+        if not self.is_init:
+            raise metaclass.BDBException.CreationError("Database not initialized. please initialize before loading data.")
         try:
             return table(self.db, self.database_name, table_name)
         except Exception:
@@ -57,6 +63,51 @@ class database:
                 fmeta[1]=(repr(FKey), fmeta[0]=="Refrenced By")
         return self.load_table(name)
     
+    def init_from_json(self, jsonfile):
+        with open(jsonfile) as jf:
+            data=dict(json.load(jf))
+        
+        #ensure the database is defined in the json file
+        try:
+            tables=data[self.database_name]
+        except:
+            raise metaclass.BDBException.RefError(f"Cannot find {self.database_name} in {jsonfile}")
+        
+        #init the database
+        try: drop(self.database_name)
+        except: pass
+        self.init()
+
+        for table in tables.keys():
+            tbname, table = table, tables[table]
+            foreign_data=table.get("foreign_key", None)
+            self.New_table(tbname,
+                           tuple(table["columns"]),
+                           tuple([eval(type) for type in table["data_types"]]),
+                           table.get("primary_key", None),
+                           foreign_data if foreign_data==None else [val if val!="PRIMARY" else PRIMARY for val in foreign_data]
+                           )
+        return self
+
+    def load_from_json(self, jsonfile):
+        '''Load table data into the database from json'''
+        if not self.is_init:
+            raise metaclass.BDBException.CreationError("Database not initialized. please initialize before loading data.")        
+        with open(jsonfile) as jf:
+            data=dict(json.load(jf))
+        for table in data.keys():
+            tb=self.load_table(table)
+            types=tb.__load_metadata__()[1].column[:-3]
+            default=data[table].get("def_val", None)
+            for i, datatype in enumerate(types):
+                datatype=type(datatype)
+                tableData=data[table]["data"]
+                for row in tableData:
+                    row[i]=datatype(row[i])
+            for row in data[table]["data"]:
+                tb+tuple(row)
+            tb.__save__()
+
 #used for sharing tables
 class Share(KeyTransition):
     def __init__(self, database:str) -> None:
