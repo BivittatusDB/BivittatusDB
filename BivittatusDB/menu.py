@@ -7,7 +7,7 @@ from DB_manage.metadata import print_metadata
 from bdb_aggregate import pause_and_clean
 
 def display_menu():
-    #pause_and_clean(0)
+    pause_and_clean(0)
     """
     Displays the main menu options to the user.
     """
