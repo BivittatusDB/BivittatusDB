@@ -4,7 +4,7 @@ import BivittatusDB as bdb
 def initialize_database(db_name):
     try:
         # Inicializar la base de datos usando la función 'init()'
-        test_db = bdb.database(db_name).init()
+        test_db = bdb.Database(db_name).init()
         print(f"Database '{db_name}' successfully initialized.")
         return test_db
     except Exception as e:

@@ -31,12 +31,12 @@ def create_db_and_table():
         db_path = os.path.join(db_directory)  # Using the user-provided database name
         
         # Initialize the database using the init() function
-        db = bdb.database(db_path).init()
+        db = bdb.Database(db_path).init()
         print(f"Database '{table_name}' successfully initialized.")
         delay(1.2)
         
         # Create the new table
-        table = db.New_table(
+        table = db.new_table(
             table_name,
             ("id", "name"),
             (int, str),
