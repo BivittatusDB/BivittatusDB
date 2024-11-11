@@ -5,7 +5,7 @@ try:
     from BDB_io import Handler
     from tty_log import logger
     from metaclass import TableMeta, BDBException, SavepointMeta, RollbackMeta, CommitMeta
-    from bdb_foreign import ForeignKey, json
+    from bdb_foreign import Foreign_key, json
     from ast import literal_eval
 except:
     raise metaclass.BDBException.ImportError(f"Could not import needed files in {__file__}")
@@ -144,7 +144,7 @@ class table(metaclass=TableMeta):
         if key=="":
             return None
         key=json.loads(key)
-        fkey=ForeignKey(*key)
+        fkey=Foreign_key(*key)
         return fkey, table(self.io, self.database, fkey.FT)
 
     def __len__(self)->int:
@@ -238,7 +238,7 @@ class table(metaclass=TableMeta):
             self.trace()
             raise metaclass.BDBException.StructureError("new data doesn't match table structure")
         for i in range(len(new_data)):
-            if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
+            if type(eval(data_types[i])()) != type(new_data[i]) and type(new_data[i]) != type(None):
                 self.trace()
                 raise metaclass.BDBException.TypeError("New data does not match defined datatypes.")
         return True

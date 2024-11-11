@@ -1,6 +1,6 @@
 import BDB_metadata, json
 
-class ForeignKey(list):
+class Foreign_key(list):
     def __init__(self, ForeignTable, ForeignColumn, LocalColumn) -> None:
         self.FT, self.FC, self.LC=ForeignTable, ForeignColumn, LocalColumn
         super().__init__()

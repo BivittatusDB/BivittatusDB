@@ -16,12 +16,12 @@ def add_names_to_table(tb1):
         return
 
     while True:
-        pause_and_clean(0)
+        #pause_and_clean(0)
         print("The current table:")
         print(tb1)
         name = input("Enter a name to add to the table (or 'exit' to end): ").strip()
         if name.lower() == 'exit':
-            pause_and_clean(0)
+            #pause_and_clean(0)
             break
         try:
             tb1 + (next_id, name)

@@ -9,7 +9,7 @@ except Exception as e:
     print(f"Error dropping database: {e}")
 
 # Initialize the database
-test_db = bdb.database("test").init()
+test_db = bdb.Database("test").init()
 
 # Create a new table
 try:

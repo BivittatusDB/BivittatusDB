@@ -1,11 +1,17 @@
+import os
 import BivittatusDB as bdb
 from bdb_aggregate import pause_and_clean, show, delay
 from DB_manage.funtions.common.user_interaction_common import get_db_choice
 
 def initialize_database(db_directory):
+    # Check if the directory exists
+    if not os.path.exists(db_directory):
+        print(f"Error: The directory '{db_directory}' does not exist.")
+        return None, None
+
     try:
         tables = show(db_directory)
-        db = bdb.database(db_directory).use()
+        db = bdb.Database(db_directory).use()
         print("Database initialized successfully.")
         return db, tables
     except Exception as e:
@@ -28,7 +34,7 @@ def load_table(db, tables):
             except Exception as e:
                 print(f"Error loading the table '{table_name}': {e}")
         else:
-            print(f"Table '{table_name}' not found. Please enter a valid table name from the list above.")
+            print(f"The table '{table_name}' was not found. Please enter a valid name from the list above.")
 
 def confirm_exit(tb1):
     while True:
@@ -53,7 +59,7 @@ def use_table():
             if tb1:
                 confirm_exit(tb1)
     else:
-        print("Invalid choice. Exiting.")
+        print("Invalid option. Exiting.")
 
 if __name__ == "__main__":
     use_table()

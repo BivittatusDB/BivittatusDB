@@ -23,7 +23,7 @@ def get_input(prompt, valid_options=None, convert_func=None):
 def initialize_table(db_name, table_name):
     try:
         print(f"Initializing database: {db_name}")
-        db = bdb.database(db_name).init()
+        db = bdb.Database(db_name).init()
         print(f"Loading table: {table_name}")
         table = db(table_name)
         print(f"Table '{table_name}' successfully loaded.")

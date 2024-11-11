@@ -6,10 +6,10 @@ try: bdb.drop("test")
 except: pass
 
 #initialize the database
-test_db=bdb.database("test").init()
+test_db=bdb.Database("test").init()
 
 #make a new table
-tb1=test_db.New_table("table1", 
+tb1=test_db.new_table("table1", 
                        ("id", "name"), 
                        (int, str), 
                        "id",
