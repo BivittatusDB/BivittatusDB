@@ -238,7 +238,7 @@ class table(metaclass=TableMeta):
             self.trace()
             raise metaclass.BDBException.StructureError("new data doesn't match table structure")
         for i in range(len(new_data)):
-            if type(data_types[i]) != type(new_data[i]) and type(new_data[i]) != type(None):
+            if type(eval(data_types[i])()) != type(new_data[i]) and type(new_data[i]) != type(None):
                 self.trace()
                 raise metaclass.BDBException.TypeError("New data does not match defined datatypes.")
         return True
