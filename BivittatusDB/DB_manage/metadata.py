@@ -5,7 +5,7 @@ from bdb_aggregate import delay, pause_and_clean
 
 def load_db_and_table(db_directory, table_name):
     try:
-        db = bdb.database(db_directory).use()
+        db = bdb.Database(db_directory).use()
         print("Database initialized correctly.")
         tb1 = db(table_name)
         print(f"Table '{table_name}' loaded successfully.")

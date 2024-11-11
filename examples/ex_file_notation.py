@@ -7,10 +7,10 @@ try: bdb.drop("test")
 except: pass
 
 #initialize the database
-test_db=bdb.database("test").init()
+test_db=bdb.Database("test").init()
 
 #create a new table 
-tb1=test_db.New_table("table1", #name "table1"
+tb1=test_db.new_table("table1", #name "table1"
                        ("id", "name"), #columns are called "id" and "name"
                        (int, str), #id holds int, and name holds str
                        "id") #id will be the primary key

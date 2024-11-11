@@ -5,15 +5,15 @@ try: bdb.drop("test")
 except: pass
 
 #initialize the database
-test_db=bdb.database("test").init()
+test_db=bdb.Database("test").init()
 
 #create new tables
-tb1=test_db.New_table("table1", 
+tb1=test_db.new_table("table1", 
                       ("id", "name"), 
                       (int, str), 
                       "id")
 
-tb2=test_db.New_table("table2", 
+tb2=test_db.new_table("table2", 
                       ("id", "language"), 
                       (int, str), 
                       "id")
