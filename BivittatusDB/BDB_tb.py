@@ -145,7 +145,8 @@ class table(metaclass=TableMeta):
             return None
         key=json.loads(key)
         fkey=Foreign_key(*key)
-        return fkey, table(self.io, self.database, fkey.FT)
+        FT=table(self.io, self.database, fkey.FT)
+        return FT.__fix_index__(key[1]), FT
 
     def __len__(self)->int:
         '''return the number of values in the data'''
@@ -156,9 +157,14 @@ class table(metaclass=TableMeta):
         if type(key)==type(str()):
             return self.columns.index(key)
         return key
+    
+    def __get_primary__(self):
+        return self.__fix_index__(self.__load_metadata__()[1].column.pop(-3))
 
-    def __getitem__(self, key: int | str):
+    def __getitem__(self, key: int | str | None):
         '''return a column from the data. Requirement to compare data'''
+        if key == None:
+            key=self.__get_primary__()
         self.column=[]
         data=self.data
         self.key=self.__fix_index__(key)
@@ -166,28 +172,32 @@ class table(metaclass=TableMeta):
             self.column.append(row[self.key])
         return self
     
-    def __setitem__(self, key: int | str, value: any):
-        '''change column name. Will probably change later.'''
-        #text keys needed for update or else foreign keys don't work [PLAN FIX]
-        org_key=key
+    def __setitem__(self, key: int | str | None, value: any):
+        '''update values'''
+        if key==None:
+            key=self.__get_primary__()
         key=self.__fix_index__(key)
-        try:
-            value[1] == None
-            data_to_change=self.data
-        except AttributeError:
-            data_to_change=value[1].data
-        for row in self.data:
-            if row in data_to_change:
-                new_row=list(row)
-                new_row[key] = value[0]
-                self.data[self.data.index(row)] = tuple(new_row)
+        if type(value[0])==table:
+            data=value[0].data
+            self[key]-data[0][key] #remove data
+            val=data[0][key]
+        elif value[0]==None: #none to change all date
+            data=self.data
+            self.data=[]
+            val=None
+        
+        for row in [list(row) for row in data]:
+            row[key]=value[1]
+            self+tuple(row) #add updated data
+        self*0 # sort by key
+        
+        #update foreign refrences
         ref=self.__load_refrenced__()
         if ref!=None:
             fkey, ft=ref
             ft@True
-            if org_key==fkey.FC:
-                ft[fkey.LC]=(value[0], ft[fkey.FC]==self.value)
-                ft.__try_commit__()
+            ft[fkey]=(ft[fkey]==val, value[1])
+            ft.__try_commit__()
         self.__try_commit__()
 
     def __empty_check__(self):
@@ -261,8 +271,8 @@ class table(metaclass=TableMeta):
         if meta[1].column.pop(-2) == "None":
             return True
         key=self.__fix_index__(meta[1].column.pop(-3))
-        other_name=literal_eval(self.__load_metadata__()[1].column.pop(-2))[0]
-        other=self.__load_foreign__(other_name)
+        other_name=self.__load_metadata__()[1].column.pop(-2)[0]
+        other:table=self.__load_foreign__(other_name)
         other_key = other.__fix_index__(other.__load_metadata__()[1].column.pop(-3))
         if new_data[key] in other[other_key]:
             return True

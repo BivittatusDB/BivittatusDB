@@ -30,7 +30,7 @@ tb2+(3, "Cindy")
 tb1+(3, None)
 
 #Set the name change id 3 to 2
-tb2["id"] = (2, tb2["id"]==3)
+tb2["id"] = (tb2["id"]==3, 2)
 
 #refresh and print 
 print(~tb1)

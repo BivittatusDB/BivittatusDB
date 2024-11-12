@@ -3,4 +3,4 @@ import BivittatusDB as bdb
 
 db = bdb.Database("test")
 
-db.init_from_json("test.json")
+db.init_from_json("examples/schema.json")

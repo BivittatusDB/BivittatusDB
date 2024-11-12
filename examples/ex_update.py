@@ -24,11 +24,11 @@ print(tb1)
 
 #example updates
 #Set the name "Cindy" to "Chloe"
-tb1[1] = ("Chloe", tb1["name"]=="Cindy")
+tb1[1] = (tb1["name"]=="Cindy", "Chloe")
 
 print(tb1)
 
 #Set all names to "new_name"
-tb1["name"] = ("new_name", bdb.ALL)
+tb1["name"] = (bdb.ALL, "new_name")
 
 print(tb1)
