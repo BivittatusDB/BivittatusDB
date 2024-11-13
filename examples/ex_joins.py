@@ -2,7 +2,7 @@ import BivittatusDB as bdb
 
 #drop pre-existing databases (for best practice and to prevent errors)
 try: bdb.drop("test")
-except: pass
+except bdb.BDBException.DeletionError: pass
 
 #initialize the database
 test_db=bdb.Database("test").init()
