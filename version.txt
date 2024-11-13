@@ -1,2 +1,2 @@
-BivittatusDB v1.2.0.5
-PyPi setup update 3
+BivittatusDB v1.3.0.0
+Beta Feature: Init from JSON
