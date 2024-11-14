@@ -47,6 +47,8 @@ pip install -r .github/requirements.txt
 
 ## Contributing
 Contributions are welcome! If you'd like to contribute to the project, please fork the repository and submit a pull request with your changes.See [Contributing](.github/CONTRIBUTING.md) & [Code of Cunduct](.github/CODE_OF_CONDUCT.md)
+If you don't know where to get started, you can check out The pinned Issue ([#36](https://github.com/BivittatusDB/BivittatusDB/issues/36)) for some of the current simple bugs. 
+If you want to request a feature, please open a issue as a Feture Request and describe to us how it will work and why you think it is important. We will review it and close the issue when the request is either implemented or dismissed. If the idea is dismissed, we will give an explanation for why we will not implement the feature ourselves, but you can also add it in your own fork if you still desire it. 
 
 ## License
 This project is licensed under the [MIT License](.github/LICENSE).
@@ -54,4 +56,4 @@ This project is licensed under the [MIT License](.github/LICENSE).
 This README.md file provides an overview of the operator-based relational database management system implemented in Python, detailing its current features, future plans, usage instructions, dependencies, and contribution guidelines. Additionally, it outlines the licensing information for the project.
 
 ## Known Issues: 
-Due to recent updates, no issues are known at this time. All example files are acting as expected. We are accepting issues if you find anything that we have missed.
+Our code always has some bug in it. We catch most of the major issues, but you can always find the latest ones in the [Issues Tab](https://github.com/BivittatusDB/BivittatusDB/issues). We also have a lot of small bugs found in the pinned issue. 
